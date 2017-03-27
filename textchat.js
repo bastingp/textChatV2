@@ -3,6 +3,8 @@ var XMLHttp;
 var strangers_messages = [];
 var cgiBusy = false;
 var serverBusy;
+var MAX_LAG_TIME = 30000;			//if time between updates is greater than this, user has been signed out
+var lastMessageTime;
 
 
 // Things to do at page load
@@ -12,6 +14,7 @@ function pageInit()
 	serverBusy = true;
 	setXMLHttp();
 	getUsername();
+	lastMessageTime = 0;
 }
 
 function exitRoom()
@@ -64,7 +67,7 @@ function sendMessage()
 }
 
 function updateChatBox(messages, user)
-{	
+{		
 	//Check if messages is an array, then add all messages to bottom of chatbox
 	if(messages.constructor == Array)
 	{
@@ -85,9 +88,17 @@ function updateChatBox(messages, user)
 function checkServerForUpdates()
 {
 	var updateMessage = "$UPDATE|" + username + "|" + strangers_messages.length + '*';
+	var loadMessage = "$LOAD|*";
 	if(!cgiBusy && !serverBusy)
 	{
-		callCGI(updateMessage);
+		if(GetTimeBetweenButtonPresses() > MAX_LAG_TIME)		//if server has timed the user out, tell server user has signed back in
+		{
+			callCGI(loadMessage);
+		}
+		else			//otherwise, ask the server for an update to the messages
+		{
+			callCGI(updateMessage);
+		}
 	}
 }
 setInterval(function(){ checkServerForUpdates()}, 1000);
@@ -235,4 +246,13 @@ function updateStrangerMessages(response, startingIndex)
 	strangers_messages.push(temp);
 	
 	updateChatBox(newMessages, "Stranger");
+}
+
+function GetTimeBetweenButtonPresses()
+{
+	var currentTime = Date.now();
+	var elapsedTime = currentTime - lastMessageTime;
+	lastMessageTime = currentTime;
+	
+	return elapsedTime;
 }
