@@ -60,7 +60,7 @@ function sendMessage()
 	{
 		callCGI(cgiMessage);
 	}
-	updateChatBox(inText, "You:");
+	updateChatBox(inText, "You");
 }
 
 function updateChatBox(messages, user)
