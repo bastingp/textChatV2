@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Chat project</title>
+  <meta charset="utf-8"/>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css?family=Tinos|VT323" rel="stylesheet">
+
+  </head>
+  
+  
+<style>
+/* Some styles for text */
+.p {
+    font-family: Verdana, sans-serif;
+}
+
+.h1 {
+	font-family: 'Barrio', cursive;
+}
+
+.h3 {
+    font-family: Verdana, sans-serif;
+}
+
+.small {
+    font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
+    font-size: 60%;
+}
+
+/* Text Box attributes */
+.textinput {
+    width: 700px;
+    font-family: 'Tinos', serif;
+    font-size: 90%;
+   background-color: #e6b3ff;
+}
+
+.jumbotron{
+background-color: #9effb8;
+width: 1000px; 
+font-family: 'VT323', monospace;
+color: #d46ce7;
+font-size: 120%;
+}
+
+.center-block{
+width: 800px; 
+
+}
+
+
+
+/* Scroll Box attributes */
+.scrollabletextbox {
+    background-color: #89aee1;
+    height: 600px;
+    width: 800px;
+    font-family: 'Tinos', serif; 
+    font-size: 82%;
+    overflow:scroll;
+    color: #000000;
+}
+</style>
+  
+ 
+ 
+<body bgcolor="#E6E6FA" onload="pageInit()" onunload="exitRoom()">
+<div class = "center-block">
+<div class = "jumbotron">
+	<script src="java_test.js" > </Script>
+	<h1 class = "text-center" > Talking to Strangers on the Interwebs</h1>
+
+	<div class = "center-block">
+	<form name="chatForm">	
+		<div class="scrollabletextbox" id="chatBox">
+		<input class="textinput" name="textInput" type="text" maxlength=50>
+		<button type="button" class="btn btn-sm" id="sendbutton" aria-label="Envelope" onclick="javascript: sendMessage()">
+  <span class="glyphicon glyphicon-envelope" aria-label="send message"></span>
+</button>
+
+	</div>
+	
+	</form>
+	</div>
+	</div>
+</body>
+</html>
