@@ -19,17 +19,21 @@ string send_fifo = "chatReply";
 
 const string user_assignment1 = "user1";
 const string user_assignment2 = "user2";
+const int MAX_UPDATE_DIFFERENCE = 15;
+string user1TimeCode = "-1";
+string user2TimeCode = "-1";
 /*
  * 
  */
- 
+ string get_time_code(string message, int& index);
  string get_command(string message, int& index);
+ bool is_valid_user(string incoming_time_code);
  void store_message(string message, int starting_index, vector<string>& user1messages, vector<string>& user2messages);
  void output_messages_through_pipes(vector<string> messages, Fifo& sendfifo);
  void handle_update(string message, int starting_index, vector<string> user1, vector<string> user2, int& user1Updates, int& user2Updates, Fifo& sendfifo);
- void check_timeout(bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates, int MAX_UPDATE_DIFFERENCE);
+ void check_timeout(bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates);
  vector<string> get_new_messages(int starting_index, vector<string> stored_messages);
- void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates);
+ void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates, string incoming_time_code);
  void unassign_user(string message, int starting_index, bool& user1connected, bool& user2connected, vector<string>& user1messages, vector<string>& user2messages);
  void return_status(Fifo& sendfifo, bool user1connected, bool user2connected);
  
@@ -47,10 +51,10 @@ int main()
 	
 	string inMessage;
 
+
 	int user1Updates = 0;
 	int user2Updates = 0;
 
-	const int MAX_UPDATE_DIFFERENCE = 15;
 	// create the FIFOs for communication
 	Fifo recfifo(receive_fifo);
 	Fifo sendfifo(send_fifo);
@@ -64,29 +68,37 @@ int main()
 		cout << "Got message: " << inMessage << endl;
 		
 		int i = 0;
-		string command = get_command(inMessage, i);
-		if(command == message_command)
+		string incoming_time_code = get_time_code(inMessage, i);
+		if (is_valid_user(incoming_time_code) == false)  //checks if user time code is valid
 		{
-			store_message(inMessage, i, user1messages, user2messages);
+			assign_user(sendfifo, user1connected, user2connected, user1Updates, user2Updates, incoming_time_code);
 		}
-		else if(command == update_command)
+		else
 		{
-			handle_update(inMessage, i, user1messages, user2messages, user1Updates, user2Updates, sendfifo);
-			check_timeout(user1connected, user2connected, user1Updates, user2Updates, MAX_UPDATE_DIFFERENCE);
+			string command = get_command(inMessage, i);
+
+			if(command == message_command)
+			{
+				store_message(inMessage, i, user1messages, user2messages);
+			}
+			else if(command == update_command)
+			{
+				handle_update(inMessage, i, user1messages, user2messages, user1Updates, user2Updates, sendfifo);
+				check_timeout(user1connected, user2connected, user1Updates, user2Updates);
+			}
+			else if(command == load_command)
+			{
+				assign_user(sendfifo, user1connected, user2connected, user1Updates, user2Updates, incoming_time_code);
+			}
+			else if(command == unload_command)
+			{
+				unassign_user(inMessage, i, user1connected, user2connected, user1messages, user2messages);
+			}
+			else if(command == status_command)
+			{
+				return_status(sendfifo, user1connected, user2connected);
+			}
 		}
-		else if(command == load_command)
-		{
-			assign_user(sendfifo, user1connected, user2connected, user1Updates, user2Updates);
-		}
-		else if(command == unload_command)
-		{
-			unassign_user(inMessage, i, user1connected, user2connected, user1messages, user2messages);
-		}
-		else if(command == status_command)
-		{
-			return_status(sendfifo, user1connected, user2connected);
-		}
-		
 		
 		recfifo.fifoclose();
 	}
@@ -94,8 +106,8 @@ int main()
 	return 0;
 }
 
-string get_command(string message, int& index)
-{	
+string get_time_code(string message, int& index)
+{
 	index = 0;
 	string command = "";
 	
@@ -109,6 +121,24 @@ string get_command(string message, int& index)
 		index++;
 	}
 	index++;
+	//go past TIMECODE|
+	while(index < message.size())
+	{
+		if(message[index] == '|')
+		{
+			break;
+		}
+		command += message[index];
+		index++;
+	}
+	index++;
+	
+	return command;
+}
+
+string get_command(string message, int& index)
+{	
+	string command = "";
 	//go past MESSAGE|
 	while(index < message.size())
 	{
@@ -122,6 +152,14 @@ string get_command(string message, int& index)
 	index++;
 	
 	return command;
+}
+
+bool is_valid_user(string incoming_time_code)
+{
+	if (incoming_time_code == user1TimeCode || incoming_time_code == user2TimeCode || incoming_time_code == "-1")
+	{
+		return true;
+	}
 }
 
 void store_message(string message, int starting_index, vector<string>& user1messages, vector<string>& user2messages)
@@ -224,7 +262,7 @@ void handle_update(string message, int starting_index, vector<string> user1, vec
 	output_messages_through_pipes(reply, sendfifo);
 }
 
-void check_timeout(bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates, int MAX_UPDATE_DIFFERENCE)
+void check_timeout(bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates)
  {
  	if (user1connected && user2connected)
 	{
@@ -271,7 +309,7 @@ void output_messages_through_pipes(vector<string> messages, Fifo& sendfifo)
 	sendfifo.fifoclose();
 }
 
-void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates)
+void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates, string incoming_time_code)
 {
 	//use a vector because output_messages_through_pipes uses a vector parameter
 	vector<string> message;
@@ -281,12 +319,15 @@ void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int
 		username += "user1";
 		user1connected = true;
 		user2Updates = 0;
+		user1TimeCode = incoming_time_code;
+
 	}
 	else if(!user2connected)
 	{
 		username += "user2";
 		user2connected = true;
 		user1Updates = 0;
+		user2TimeCode = incoming_time_code;
 	}
 	else
 	{
@@ -319,11 +360,13 @@ void unassign_user(string message, int starting_index, bool& user1connected, boo
 	{
 		user1connected = false;
 		user1messages.clear();
+		user1TimeCode = "-1";
 	}
 	else
 	{
 		user2connected = false;
 		user2messages.clear();
+		user2TimeCode = "-1";
 	}
 }
 
