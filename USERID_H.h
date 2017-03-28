@@ -26,7 +26,7 @@ string getUserName() const;
 
 //set username
 
-void setUserName(string username);
+getUserName();
 
 
 private: 
