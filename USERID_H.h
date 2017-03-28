@@ -12,35 +12,28 @@ public:
 
 //Constructor
 User(); 
-User(userTime, userColor, userName); 
+User(string t , string c, string n); 
 
 //Get the userTime
-unsigned int getUserTime() const;
-
-//set userTime
-
-void setTime(int timeOfLoad); 
+string getUserTime() const;
+ 
 
 //Get userColor
 string getUserColor() const; 
-
-//set userColor
-
-void setUserColor(string color);
 
 //Get userName
 string getUserName() const; 
 
 //set username
 
-void setUserName(string username);
+getUserName();
 
 
 private: 
 
-userTime = timeOfLoad
-userColor = color;
-userName = username; 
+string timeCode;
+string color;
+string username; 
 
 };
 
