@@ -26,9 +26,10 @@ const string user_assignment2 = "user2";
  string get_command(string message, int& index);
  void store_message(string message, int starting_index, vector<string>& user1messages, vector<string>& user2messages);
  void output_messages_through_pipes(vector<string> messages, Fifo& sendfifo);
- void handle_update(string message, int starting_index, vector<string> user1, vector<string> user2, Fifo& sendfifo);
+ void handle_update(string message, int starting_index, vector<string> user1, vector<string> user2, int& user1Updates, int& user2Updates, Fifo& sendfifo);
+ void check_timeout(bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates, int MAX_UPDATE_DIFFERENCE);
  vector<string> get_new_messages(int starting_index, vector<string> stored_messages);
- void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected);
+ void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates);
  void unassign_user(string message, int starting_index, bool& user1connected, bool& user2connected, vector<string>& user1messages, vector<string>& user2messages);
  void return_status(Fifo& sendfifo, bool user1connected, bool user2connected);
  
@@ -45,6 +46,11 @@ int main()
 	const string status_command = "STATUS";
 	
 	string inMessage;
+
+	int user1Updates = 0;
+	int user2Updates = 0;
+
+	const int MAX_UPDATE_DIFFERENCE = 15;
 	// create the FIFOs for communication
 	Fifo recfifo(receive_fifo);
 	Fifo sendfifo(send_fifo);
@@ -65,11 +71,12 @@ int main()
 		}
 		else if(command == update_command)
 		{
-			handle_update(inMessage, i, user1messages, user2messages, sendfifo);
+			handle_update(inMessage, i, user1messages, user2messages, user1Updates, user2Updates, sendfifo);
+			check_timeout(user1connected, user2connected, user1Updates, user2Updates, MAX_UPDATE_DIFFERENCE);
 		}
 		else if(command == load_command)
 		{
-			assign_user(sendfifo, user1connected, user2connected);
+			assign_user(sendfifo, user1connected, user2connected, user1Updates, user2Updates);
 		}
 		else if(command == unload_command)
 		{
@@ -156,7 +163,7 @@ void store_message(string message, int starting_index, vector<string>& user1mess
 	}
 }
 
-void handle_update(string message, int starting_index, vector<string> user1, vector<string> user2, Fifo& sendfifo)
+void handle_update(string message, int starting_index, vector<string> user1, vector<string> user2, int& user1Updates, int& user2Updates, Fifo& sendfifo)
 {
 	int i = starting_index;
 	string username = "";
@@ -188,6 +195,7 @@ void handle_update(string message, int starting_index, vector<string> user1, vec
 	vector<string> reply;
 	if(username == user_assignment1)
 	{
+		user1Updates++;
 		//return other user's data
 		if(size < user2.size())
 		{
@@ -201,6 +209,7 @@ void handle_update(string message, int starting_index, vector<string> user1, vec
 	}
 	else if(username == user_assignment2)
 	{
+		user2Updates++;
 		//return other user's data
 		if(size < user1.size())
 		{
@@ -214,6 +223,28 @@ void handle_update(string message, int starting_index, vector<string> user1, vec
 	}	
 	output_messages_through_pipes(reply, sendfifo);
 }
+
+void check_timeout(bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates, int MAX_UPDATE_DIFFERENCE)
+ {
+ 	if (user1connected && user2connected)
+	{
+	 	if ((user1Updates - user2Updates) > MAX_UPDATE_DIFFERENCE)
+ 		{
+ 			user2connected = false;
+ 			cout << "user2 disconnected"<< endl;
+ 			user1Updates = 0;
+ 			user2Updates = 0;
+ 		}
+ 		if ((user2Updates - user1Updates) > MAX_UPDATE_DIFFERENCE)
+ 		{
+ 			user1connected = false;
+ 			cout << "user1 disconnected" << endl;
+ 			user1Updates = 0;
+ 			user2Updates = 0;
+ 		}
+ 	}
+ }
+
 
 vector<string> get_new_messages(int starting_index, vector<string> stored_messages)
 {
@@ -240,7 +271,7 @@ void output_messages_through_pipes(vector<string> messages, Fifo& sendfifo)
 	sendfifo.fifoclose();
 }
 
-void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected)
+void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates)
 {
 	//use a vector because output_messages_through_pipes uses a vector parameter
 	vector<string> message;
@@ -249,11 +280,13 @@ void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected)
 	{
 		username += "user1";
 		user1connected = true;
+		user2Updates = 0;
 	}
 	else if(!user2connected)
 	{
 		username += "user2";
 		user2connected = true;
+		user1Updates = 0;
 	}
 	else
 	{
