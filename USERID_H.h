@@ -5,14 +5,14 @@ using namespace std;
 
 //enum userColor { #800000, #808000, #00FFFF, #008080, #FF00FF, 
 		//#800080, #FFFF00, #FFFFFF, #FF0000, #00FF00 };
-class userID {
+class user {
 
 public: 
 
 
 //Constructor
-userID(); 
-userID(userTime, userColor, userName); 
+user(); 
+user(userTime, userColor, userName); 
 
 //Get the userTime
 unsigned int getUserTime() const;
