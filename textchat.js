@@ -11,12 +11,12 @@ var timeCode;
 // Things to do at page load
 function pageInit() 
 {
+	timeCode = Date.now();
 	document.getElementById("sendbutton").disabled = true;
 	serverBusy = true;
 	setXMLHttp();
 	getUsername();
 	lastMessageTime = 0;
-	timeCode = Date.now();
 }
 
 function exitRoom()
