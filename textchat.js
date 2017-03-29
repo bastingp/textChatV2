@@ -61,7 +61,7 @@ function sendMessage()
 	
 	// Clear the input text
     document.chatForm.textInput.value = "";    
-	var cgiMessage = "$MESSAGE|" + username + '|' + inText + '*';
+	var cgiMessage = "$" + timeCode + "|MESSAGE|" + username + '|' + inText + '*';
 	if(!cgiBusy)
 	{
 		callCGI(cgiMessage);
