@@ -20,8 +20,8 @@ string send_fifo = "chatReply";
 const string user_assignment1 = "user1";
 const string user_assignment2 = "user2";
 const int MAX_UPDATE_DIFFERENCE = 15;
-string user1TimeCode = "-1";
-string user2TimeCode = "-1";
+string user1TimeCode = "NULL";
+string user2TimeCode = "NULL";
 /*
  * 
  */
@@ -69,13 +69,17 @@ int main()
 		
 		int i = 0;
 		string incoming_time_code = get_time_code(inMessage, i);
-		if (is_valid_user(incoming_time_code) == false)  //checks if user time code is valid
+		
+		if (!is_valid_user(incoming_time_code))  //checks if user time code is valid
 		{
+			cout << "\nNot a valid user\n";
 			assign_user(sendfifo, user1connected, user2connected, user1Updates, user2Updates, incoming_time_code);
 		}
 		else
 		{
+			cout << "\nIs a valid user\n";
 			string command = get_command(inMessage, i);
+			cout << "Got command: " << command << endl << endl;
 
 			if(command == message_command)
 			{
@@ -156,10 +160,8 @@ string get_command(string message, int& index)
 
 bool is_valid_user(string incoming_time_code)
 {
-	if (incoming_time_code == user1TimeCode || incoming_time_code == user2TimeCode || incoming_time_code == "-1")
-	{
-		return true;
-	}
+	bool user_unassigned = (user1TimeCode == "NULL" || user2TimeCode == "NULL");
+	return (incoming_time_code == user1TimeCode || incoming_time_code == user2TimeCode || user_unassigned);
 }
 
 void store_message(string message, int starting_index, vector<string>& user1messages, vector<string>& user2messages)
@@ -300,7 +302,9 @@ vector<string> get_new_messages(int starting_index, vector<string> stored_messag
 
 void output_messages_through_pipes(vector<string> messages, Fifo& sendfifo)
 {
+	cout << "\n\n***Outputting messages****\n\n";
 	sendfifo.openwrite();
+	cout << "Opened pipes\n\n";
 	for(int i = 0; i < messages.size(); i++)
 	{
 		cout << messages[i] << endl;
@@ -312,10 +316,12 @@ void output_messages_through_pipes(vector<string> messages, Fifo& sendfifo)
 void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates, string incoming_time_code)
 {
 	//use a vector because output_messages_through_pipes uses a vector parameter
+	
 	vector<string> message;
 	string username = "$USER|";
 	if(!user1connected)
 	{
+		cout << "\nUser1 not connected\n";
 		username += "user1";
 		user1connected = true;
 		user2Updates = 0;
@@ -324,6 +330,7 @@ void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int
 	}
 	else if(!user2connected)
 	{
+		cout << "\nUser2 not connected\n";
 		username += "user2";
 		user2connected = true;
 		user1Updates = 0;
@@ -331,6 +338,7 @@ void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int
 	}
 	else
 	{
+		cout << "\nChat room full\n";
 		username += "FULL";
 	}
 	username += "*";
@@ -360,13 +368,13 @@ void unassign_user(string message, int starting_index, bool& user1connected, boo
 	{
 		user1connected = false;
 		user1messages.clear();
-		user1TimeCode = "-1";
+		user1TimeCode = "NULL";
 	}
 	else
 	{
 		user2connected = false;
 		user2messages.clear();
-		user2TimeCode = "-1";
+		user2TimeCode = "NULL";
 	}
 }
 

@@ -30,6 +30,7 @@ int main()
 	Cgicc cgi;    // Ajax object
 	char *cstr;
 	const string no_reply = "$END*";		//sent if message to server does not get a reply
+	
 	// Create AJAX objects to recieve information from web page.
 	form_iterator user_input = cgi.getElement("message");
 	
@@ -91,6 +92,8 @@ bool requires_receive(string message, bool& asked_to_update)
 	const string status_command = "STATUS";
 	
 	string command = get_command(message);
+	cout << message << endl;
+	cout << command << endl << endl;
 
 	if(command == update_command)
 		asked_to_update = true;
@@ -107,6 +110,12 @@ string get_command(string message)
 	
 	//go past $
 	while(message[index] != '$' && index < message.size())
+	{
+		index++;
+	}
+	index++;
+	//go past TimeCode|
+	while(message[index] != '|' && index < message.size())
 	{
 		index++;
 	}
