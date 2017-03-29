@@ -12,6 +12,7 @@ var timeCode;
 function pageInit() 
 {
 	timeCode = Date.now();
+	updateChatBox(timeCode, "Time code");
 	document.getElementById("sendbutton").disabled = true;
 	serverBusy = true;
 	setXMLHttp();
