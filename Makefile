@@ -1,6 +1,6 @@
 #MakeFile to build and deploy the Sample US CENSUS Name Data using ajax
 # For CSC3004 Software Development
-
+#test
 # Put your user name below:
 USER= schutzj
 
