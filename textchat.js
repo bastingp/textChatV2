@@ -1,3 +1,5 @@
+//comment
+
 var username;
 var XMLHttp;
 var strangers_messages = [];

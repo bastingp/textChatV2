@@ -1,3 +1,5 @@
+//comment
+
 #include <iostream>
 // Stuff for AJAX
 #include "cgicc/Cgicc.h"
