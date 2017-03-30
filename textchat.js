@@ -13,11 +13,18 @@ function pageInit()
 {
 	console.log("Page load");
 	timeCode = Date.now();
+	//getTimeCode();
 	document.getElementById("sendbutton").disabled = true;
 	serverBusy = true;
 	setXMLHttp();
 	getUsername();
 	lastMessageTime = timeCode;
+}
+
+function getTimeCode()
+{
+	fullTimeCode = Date.now().toString();
+	timeCode = fullTimeCode.substr(fullTimeCode.length - 6, fullTimeCode.length - 1);
 }
 
 function exitRoom()
@@ -54,7 +61,7 @@ function getUsername()
 function sendMessage() 
 {
     // Get the text from the text box
-    var inText = document.chatForm.textInput.value;
+    var inText = document.textBox.textInput.value;
     
     // Make sure something is there
     if (inText.length < 1) return;
