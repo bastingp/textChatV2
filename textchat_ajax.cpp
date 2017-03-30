@@ -44,6 +44,7 @@ int main()
 	bool need_to_listen = requires_receive(message, asked_to_update);
 	
 	cout << "Content-Type: text/plain\n\n";
+	
 	sendfifo.openwrite();
 	sendfifo.send(message);
 	if(need_to_listen)
@@ -92,8 +93,6 @@ bool requires_receive(string message, bool& asked_to_update)
 	const string status_command = "STATUS";
 	
 	string command = get_command(message);
-	cout << message << endl;
-	cout << command << endl << endl;
 
 	if(command == update_command)
 		asked_to_update = true;

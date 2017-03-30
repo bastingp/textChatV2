@@ -11,6 +11,8 @@ var timeCode;
 // Things to do at page load
 function pageInit() 
 {
+	lastMessageTime = 0;
+	console.log("Page load");
 	timeCode = Date.now();
 	document.getElementById("sendbutton").disabled = true;
 	serverBusy = true;
@@ -114,8 +116,10 @@ function updateScroll()
 
 function callCGI(CGIMessage)
 {
+	console.log("CGI message: " + CGIMessage);
+	
 	cgiBusy = true;
-	XMLHttp.open("GET", "/cgi-bin/schutzj_java_test_fetchajax.cgi?"
+	XMLHttp.open("GET", "/cgi-bin/schutzj_textchat_ajax.cgi?"
 						 + "&message=" + CGIMessage
 						 ,true);
     XMLHttp.onreadystatechange=function() 
@@ -133,6 +137,7 @@ function callCGI(CGIMessage)
 
 function parseResponse(response)
 {
+	console.log("Parsing response....");
 	var user_command = "USER";
 	var update_command = "UPDATE";
 	
@@ -161,6 +166,8 @@ function parseResponse(response)
 		command += response[index];
 		index++;
 	}
+	
+	console.log("Got command: " + command);
 	
 	//figure out what to do with message
 	if(command == user_command)
