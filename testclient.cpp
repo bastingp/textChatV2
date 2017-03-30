@@ -18,8 +18,8 @@ string get_username(string message);
 
 int main() 
 {
-	const string load_message = "$LOAD%*";
-	const string unload_message = "$UNLOAD%";
+	const string load_message = "$528|LOAD|*";
+	const string unload_message = "$528|UNLOAD|user1*";
 	const string status_check_message = "$STATUS%*";
 	string word;
 	string message;

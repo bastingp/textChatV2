@@ -1,5 +1,3 @@
-//comment
-
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -30,7 +28,7 @@ string user2TimeCode = "NULL";
  string get_time_code(string message, int& index);
  string get_command(string message, int& index);
  bool is_valid_user(string incoming_time_code);
- void store_message(string message, int starting_index, vector<string>& user1messages, vector<string>& user2messages);
+ void store_message(string message, int starting_index, vector<string>& user1messages, vector<string>& user2messages, Fifo& sendfifo);
  void output_messages_through_pipes(vector<string> messages, Fifo& sendfifo);
  void handle_update(string message, int starting_index, vector<string> user1, vector<string> user2, int& user1Updates, int& user2Updates, Fifo& sendfifo);
  void check_timeout(bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates);
@@ -85,7 +83,7 @@ int main()
 
 			if(command == message_command)
 			{
-				store_message(inMessage, i, user1messages, user2messages);
+				store_message(inMessage, i, user1messages, user2messages, sendfifo);
 			}
 			else if(command == update_command)
 			{
@@ -166,7 +164,7 @@ bool is_valid_user(string incoming_time_code)
 	return (incoming_time_code == user1TimeCode || incoming_time_code == user2TimeCode || user_unassigned);
 }
 
-void store_message(string message, int starting_index, vector<string>& user1messages, vector<string>& user2messages)
+void store_message(string message, int starting_index, vector<string>& user1messages, vector<string>& user2messages, Fifo& sendfifo)
 {
 	int i = starting_index;
 	string username = "";
@@ -203,6 +201,10 @@ void store_message(string message, int starting_index, vector<string>& user1mess
 	{
 		user2messages.push_back(str);
 	}
+
+	vector<string> end_message;
+	end_message.push_back("$END");
+	output_messages_through_pipes(end_message, sendfifo);
 }
 
 void handle_update(string message, int starting_index, vector<string> user1, vector<string> user2, int& user1Updates, int& user2Updates, Fifo& sendfifo)
@@ -345,7 +347,8 @@ void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int
 	}
 	username += "*";
 	message.push_back(username);
-	
+	message.push_back("$END"); //
+
 	output_messages_through_pipes(message, sendfifo);
 }
 
