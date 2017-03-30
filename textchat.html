@@ -71,7 +71,7 @@ width: 800px;
 <body bgcolor="#E6E6FA" onload="pageInit()" onunload="exitRoom()">
 <div class = "center-block">
 <div class = "jumbotron">
-	<script src="textchat.js" > </Script>
+	<script src="textchat.js" > </script>
 	<h1 class = "text-center" > Talking to Strangers on the Interwebs</h1>
 
 	<div class = "center-block">
@@ -84,10 +84,11 @@ width: 800px;
 		<input class="textinput" name="textInput" type="text" maxlength=50
 		       onkeydown="if (event.keyCode == 13)
                           javascript: sendMessage()">
+	</form>
 		<button type="button" class="btn btn-sm" id="sendbutton" aria-label="Envelope" onclick="javascript: sendMessage()">
   			<span class="glyphicon glyphicon-envelope" aria-label="send message"></span>
 				</button>
-	</form>
+	</div>
 	</div>
 	</div>
 </body>
