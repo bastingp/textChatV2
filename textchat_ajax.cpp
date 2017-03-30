@@ -24,14 +24,13 @@ using namespace cgicc; // Needed for AJAX functions.
 string receive_fifo = "chatReply";
 string send_fifo = "chatRequest";
 
-bool requires_receive(string message, bool& asked_to_update);
 string get_command(string message);
 
 int main() 
 {	
 	Cgicc cgi;    // Ajax object
 	char *cstr;
-	const string no_reply = "$END*";		//sent if message to server does not get a reply
+	const string unload_command = "UNLOAD";
 	
 	// Create AJAX objects to recieve information from web page.
 	form_iterator user_input = cgi.getElement("message");
@@ -42,66 +41,39 @@ int main()
 	
 	string message = **user_input;
 	
-	bool asked_to_update;
-	bool need_to_listen = requires_receive(message, asked_to_update);
-	
+	//Tell javascript how to read output
 	cout << "Content-Type: text/plain\n\n";
 	
+	//Send message to server
 	sendfifo.openwrite();
 	sendfifo.send(message);
-	if(need_to_listen)
-	{		
-		string reply = "";
-		recfifo.openread();
-		//update sends multiple strings, so deal with it differently
-		if(asked_to_update)
-		{
-			string all_replies = "";
-			reply = recfifo.recv();
-			while(reply.find("$END") > 0)
-			{
-				all_replies += "|" + reply;
-				if(reply.find("$UPTODATE*") != string::npos)
-				{
-					break;
-				}
-				reply = recfifo.recv();
-			}
-			
-			reply = all_replies;
-		}
-		else
-		{
-			reply = recfifo.recv();
-		}
-		
-		recfifo.fifoclose();
-		cout << reply;
-	}
-	else
+	
+	//if page is unloading, no reason to wait for response from server
+	if(get_command(message) == unload_command)
 	{
-		cout << no_reply;
+		return 0;
 	}
+	
+	//Get all messages from the server, and store in string
+	recfifo.openread();
+	string reply = "";
+	string temp = recfifo.recv();
+	while(temp.find("$END") > 0)
+	{
+		reply += "|" + temp;
+		if(temp.find("$UPTODATE*") != string::npos)
+		{
+			break;
+		}
+		temp = recfifo.recv();
+	}
+	
+	recfifo.fifoclose();
+	cout << reply;
 	
 	sendfifo.fifoclose();
 	
 	return 0;
-}
-
-bool requires_receive(string message, bool& asked_to_update)
-{
-	const string load_command = "LOAD";
-	const string update_command = "UPDATE";
-	const string status_command = "STATUS";
-	
-	string command = get_command(message);
-
-	if(command == update_command)
-		asked_to_update = true;
-	else
-		asked_to_update = false;
-	
-	return (command == load_command || command == update_command || command == status_command);
 }
 
 string get_command(string message)
