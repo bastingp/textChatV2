@@ -11,14 +11,13 @@ var timeCode;
 // Things to do at page load
 function pageInit() 
 {
-	lastMessageTime = 0;
 	console.log("Page load");
 	timeCode = Date.now();
 	document.getElementById("sendbutton").disabled = true;
 	serverBusy = true;
 	setXMLHttp();
 	getUsername();
-	lastMessageTime = 0;
+	lastMessageTime = timeCode;
 }
 
 function exitRoom()
@@ -95,8 +94,11 @@ function checkServerForUpdates()
 	var loadMessage = "$" + timeCode + "|LOAD|*";
 	if(!cgiBusy && !serverBusy)
 	{
-		if(GetTimeBetweenButtonPresses() > MAX_LAG_TIME)		//if server has timed the user out, tell server user has signed back in
+		var time = GetTimeBetweenButtonPresses();
+		if(time > MAX_LAG_TIME)		//if server has timed the user out, tell server user has signed back in
 		{
+			console.log("time between button presses: " + time);
+			console.log("Reloading page because of server time out");
 			callCGI(loadMessage);
 		}
 		else			//otherwise, ask the server for an update to the messages
