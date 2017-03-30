@@ -69,7 +69,7 @@ function sendMessage()
     if (inText.length < 1) return;
 	
 	// Clear the input text
-    document.chatForm.textInput.value = "";    
+    document.textBox.textInput.value = "";    
 	var cgiMessage = "$" + timeCode + "|MESSAGE|" + username + '|' + inText + '*';
 	if(!cgiBusy)
 	{
