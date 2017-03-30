@@ -40,6 +40,7 @@ textchat_ajax: textchat_ajax.o  fifo.h
 PutCGI: textchat_ajax
 	chmod 757 textchat_ajax
 	cp textchat_ajax /usr/lib/cgi-bin/$(USER)_textchat_ajax.cgi 
+	cp textchat_ajax.cpp /var/www/html/class/softdev/$(USER)
 
 	echo "Current contents of your cgi-bin directory: "
 	ls -l /usr/lib/cgi-bin/

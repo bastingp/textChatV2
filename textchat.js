@@ -16,7 +16,7 @@ function pageInit()
 	console.log("Page load");
 	timeCode = Date.now();
 	//getTimeCode();
-	document.getElementById("sendbutton").disabled = true;
+	//document.getElementById("sendbutton").disabled = true;
 	serverBusy = true;
 	setXMLHttp();
 	getUsername();
@@ -209,7 +209,7 @@ function assignUsername(response, startingIndex)
 	}
 	if(username == validUser1 || username == validUser2)
 	{
-		document.getElementById("sendbutton").disabled = false;
+		//document.getElementById("sendbutton").disabled = false;
 		serverBusy = false;
 	}
 	//otherwise, don't let a user type a message to the server

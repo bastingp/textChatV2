@@ -35,43 +35,46 @@ int main()
 	// Create AJAX objects to recieve information from web page.
 	form_iterator user_input = cgi.getElement("message");
 	
-	  // create the FIFOs for communication
-	Fifo recfifo(receive_fifo);
-	Fifo sendfifo(send_fifo);
+	  // // create the FIFOs for communication
+	// Fifo recfifo(receive_fifo);
+	// Fifo sendfifo(send_fifo);
 	
-	string message = **user_input;
+	// string message = **user_input;
 	
 	//Tell javascript how to read output
 	cout << "Content-Type: text/plain\n\n";
 	
-	//Send message to server
-	sendfifo.openwrite();
-	sendfifo.send(message);
+	cout << "I'm working!";
 	
-	//if page is unloading, no reason to wait for response from server
-	if(get_command(message) == unload_command)
-	{
-		return 0;
-	}
+	// //Send message to server
+	// sendfifo.openwrite();
+	// sendfifo.send(message);
 	
-	//Get all messages from the server, and store in string
-	recfifo.openread();
-	string reply = "";
-	string temp = recfifo.recv();
-	while(temp.find("$END") > 0)
-	{
-		reply += "|" + temp;
-		if(temp.find("$UPTODATE*") != string::npos)
-		{
-			break;
-		}
-		temp = recfifo.recv();
-	}
+	// //if page is unloading, no reason to wait for response from server
+	// if(get_command(message) == unload_command)
+	// {
+		// sendfifo.fifoclose();
+		// return 0;
+	// }
 	
-	recfifo.fifoclose();
-	cout << reply;
+	// //Get all messages from the server, and store in string
+	// recfifo.openread();
+	// string reply = "";
+	// // string temp = recfifo.recv();
+	// // while(temp.find("$END") > 0)
+	// // {
+		// // reply += "|" + temp;
+		// // if(temp.find("$UPTODATE*") != string::npos)
+		// // {
+			// // break;
+		// // }
+		// // temp = recfifo.recv();
+	// // }
 	
-	sendfifo.fifoclose();
+	// // recfifo.fifoclose();
+	// cout << reply;
+	
+	// sendfifo.fifoclose();
 	
 	return 0;
 }
