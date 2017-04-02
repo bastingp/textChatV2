@@ -23,6 +23,16 @@ struct IncomingData
 	string username = "";
 	string message = "";
 	string userMessageSize = "";
+	
+	//resets all variables to empty strings
+	void Reset()
+	{
+		timeCode = "";
+		command = "";
+		username = "";
+		message = "";
+		userMessageSize = "";
+	}
 };
 
 vector<User> activeUsers;			//all users signed into the server
