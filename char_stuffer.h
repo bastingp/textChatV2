@@ -27,6 +27,8 @@ public:
 	
 private:
 	vector<char> specialChars;
+	
+	const char charNotifier = '\\';
 };
 
 #endif

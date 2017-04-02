@@ -53,7 +53,7 @@ string CharStuffer::GetStringStuffed(string line)
 		{
 			if(c == specialChars[j])		//if c == a special char...
 			{
-				line.insert(line.begin() + i, c);			//stuff the char into the line so it's doubled
+				line.insert(line.begin() + i, charNotifier);			//stuff the char into the line so it's doubled
 				i++;				//increment i, so that it doesn't loop endlessly on the same character
 				break;
 			}

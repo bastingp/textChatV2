@@ -18,7 +18,7 @@ using namespace std;
 //used to store data from cgi
 struct IncomingData
 {
-	string timeCode = "";
+	string timecode = "";
 	string command = "";
 	string username = "";
 	string message = "";
@@ -27,7 +27,7 @@ struct IncomingData
 	//resets all variables to empty strings
 	void Reset()
 	{
-		timeCode = "";
+		timecode = "";
 		command = "";
 		username = "";
 		message = "";
@@ -37,7 +37,7 @@ struct IncomingData
 
 vector<User> activeUsers;			//all users signed into the server
 
-void ParseIncomingData(IncomingData incomingData, string message);
+void ParseIncomingData(string message);
 
 
 int main()
@@ -53,91 +53,93 @@ int main()
 }
 
 
-ParseIncomingData(IncomingData incomingData, string message){
-	int i = 0 //index; 
+IncomingData ParseIncomingData(string message)
+{
+	const string messageRequest = "MESSAGE";
+	const string updateRequest = "UPDATE";
+	
+	//index; 
+	int i = 0;
+	//local incomingData
+	IncomingData incomingData;
 	
 	//get the timecode
+	//move past '$'
 	while (i < message.size())
 	{
 		if (message[i] == '$')
 		{
 			break;
 		}
-		index++
+		i++;
 	}
-	index++
+	i++;
 	
 	while(i < message.size())
 	{
 		if(message[i] == '|')
-			{
-				break;
-			}
-			
-			incomingData.timecode += message[i];
-			index++; 
+		{
+			break;
+		}
+		
+		incomingData.timecode += message[i];
+		i++; 
 	}
-	index++; 
+	i++; 
 	
 	//figure out what's next; 
 	
-	if (message[i] == '$'){ //get command
+	//get command
 	while(i < message.size()) 
 	{
 		if(message[i] == '|')
-			{
-				break;
-			}
-			
-			incomingData.command += message[i];
-			index++; 
+		{
+			break;
+		}
+		
+		incomingData.command += message[i];
+		i++; 
 	}
-	index++; 
-	}
+	i++; 
 	
 	//get everything else; 
 	
 	//get Username
-	while(i < message.size()) 
+	while(i < message.size() && message[i] != '*') 
 	{
 		if(message[i] == '|')
-			{
-				break;
-			}
+		{
+			break;
+		}
 			
-			incomingData.username += message[i];
-			index++; 
+		incomingData.username += message[i];
+		i++; 
 	}
-	index++; 
+	i++; 
 
 
 	//get Message
-	while(i < message.size()) 
+	while(i < message.size() && message[i] != '*') 
 	{
 		if(message[i] == '|')
-			{
-				break;
-			}
-			
+		{
+			break;
+		}
+		
+		//if the data is a message, store it in message
+		if(incomingData.command == messageRequest)
+		{
 			incomingData.message += message[i];
-			index++; 
+		}
+		else if(incomingData.command == updateRequest)	//if the data is messageSize, store it in userMessageSize
+		{
+			incomingData.userMessageSize += message[i];
+		}
+		i++; 
 	}
-	index++; 
+	i++; 
 	
-	
-	//get Message size
-	 
-	while(i < message.size()) 
-	{
-		if(message[i] == '|')
-			{
-				break;
-			}
-			
-			incomingData.messageSize += message[i];
-			index++; 
-	}
-	index++; 
-	}
+	return incomingData;
+}
 	
 		
