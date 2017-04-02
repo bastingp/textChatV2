@@ -2,30 +2,35 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "USERID_H"
+#include "USER_H.h"
 
 //Constructor
 
-User::User() {
-    timeCode = -1; 
-    color = "#FFC1CC"
-    username = "default_username"
+User::User() 
+{
+    timeCode = "NULL"; 
+    color = "#FFC1CC";
+    username = "default_username";
+}
 
-User::User(string t, string c, string n) {
+User::User(string t, string c, string n) 
+{
     timeCode = t; 
     color = c;
     username = n;
 }
 
-string User::getUserTime() const {
-    
+string User::GetTime() const 
+{
     return (timeCode);
 }
 
-string User::getUserName() const {
+string User::GetUsername() const 
+{
     return (username);
 }
 
-string User::getUserColor() const {
+string User::GetColor() const 
+{
     return (color);
 }

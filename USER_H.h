@@ -1,39 +1,37 @@
-#ifndef USERID_H
-#define USERID_H
+#ifndef USER_H
+#define USER_H
+
+#include <string>
 
 using namespace std; 
 
 //enum userColor { #800000, #808000, #00FFFF, #008080, #FF00FF, 
 		//#800080, #FFFF00, #FFFFFF, #FF0000, #00FF00 };
-class User {
+class User 
+{
 
 public: 
 
+	//Constructor
+	User(); 
+	User(string t , string c, string n); 
 
-//Constructor
-User(); 
-User(string t , string c, string n); 
+	//Get the userTime
+	string GetTime() const;
+	 
 
-//Get the userTime
-string getUserTime() const;
- 
+	//Get userColor
+	string GetColor() const; 
 
-//Get userColor
-string getUserColor() const; 
-
-//Get userName
-string getUserName() const; 
-
-//set username
-
-getUserName();
+	//Get userName
+	string GetUsername() const; 
 
 
 private: 
 
-string timeCode;
-string color;
-string username; 
+	string timeCode;
+	string color;
+	string username; 
 
 };
 
