@@ -65,81 +65,39 @@ IncomingData ParseIncomingData(string message)
 	
 	//get the timecode
 	//move past '$'
-	while (i < message.size())
+	
+	for(int j = 0; j < 5 && i < message.size() && message[i] != '*'; j++)
 	{
-		if (message[i] == '$')
+		while (i < message.size() && message[i] != '$' && message[i] != '|' && message[i] != '*')
 		{
-			break;
+			if(j == 1)		//get timecode
+			{
+				incomingData.timecode += message[i];
+			}
+			else if(j == 2)		//get command
+			{
+				incomingData.command += message[i];
+			}
+			else if(j == 3)		//get username
+			{
+				incomingData.username += message[i];
+			}
+			else if(j == 4)		//get message or messageSize
+			{
+				//if the data is a message, store it in message
+				if(incomingData.command == messageRequest)
+				{
+					incomingData.message += message[i];
+				}
+				else if(incomingData.command == updateRequest)	//if the data is messageSize, store it in userMessageSize
+				{
+					incomingData.userMessageSize += message[i];
+				}
+			}
+			i++;
 		}
 		i++;
 	}
-	i++;
-	
-	while(i < message.size())
-	{
-		if(message[i] == '|')
-		{
-			break;
-		}
-		
-		incomingData.timecode += message[i];
-		i++; 
-	}
-	i++; 
-	
-	//figure out what's next; 
-	
-	//get command
-	while(i < message.size()) 
-	{
-		if(message[i] == '|')
-		{
-			break;
-		}
-		
-		incomingData.command += message[i];
-		i++; 
-	}
-	i++; 
-	
-	//get everything else; 
-	
-	//get Username
-	while(i < message.size() && message[i] != '*') 
-	{
-		if(message[i] == '|')
-		{
-			break;
-		}
-			
-		incomingData.username += message[i];
-		i++; 
-	}
-	i++; 
 
-
-	//get Message
-	while(i < message.size() && message[i] != '*') 
-	{
-		if(message[i] == '|')
-		{
-			break;
-		}
-		
-		//if the data is a message, store it in message
-		if(incomingData.command == messageRequest)
-		{
-			incomingData.message += message[i];
-		}
-		else if(incomingData.command == updateRequest)	//if the data is messageSize, store it in userMessageSize
-		{
-			incomingData.userMessageSize += message[i];
-		}
-		i++; 
-	}
-	i++; 
-	
 	return incomingData;
 }
-	
-		
