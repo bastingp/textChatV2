@@ -45,6 +45,7 @@ IncomingData GetMessageAsIncomingData(string message);
 void AssignUser(IncomingData data);
 string GetFirstAvailableUsername();
 bool DataIsCorrupt(IncomingData data);
+void UnassignUser(IncomingData incomingData);
 
 
 int main()
@@ -181,4 +182,16 @@ bool DataIsCorrupt(IncomingData data)
 {
 	const string corruptMessage = "CORRUPT";
 	return(data.timecode == corruptMessage || data.command == corruptMessage || data.userMessageSize == corruptMessage);
+}
+
+void UnassignUser(IncomingData incomingData)
+{
+	for(int i = 0; i < activeUsers.size(); i++)
+	{
+		if(activeUsers[i].GetUsername == incomingData.username || activeUsers[i].GetTime() == incomingData.timecode)
+		{
+			activeUsers.erase(activeUsers.begin()+i);
+			break;
+		}
+	}
 }
