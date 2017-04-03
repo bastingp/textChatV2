@@ -35,9 +35,14 @@ struct IncomingData
 	}
 };
 
+const int MAX_USERS = 10;
 vector<User> activeUsers;			//all users signed into the server
+vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPtolemy", "StrangerHelga", "StrangerAlex", 
+									"StrangerThings", "StrangerLudwig", "StrangerToadstool", "StrangerJedediah", "StrangerYevgeni"};
+
 
 void ParseIncomingData(string message);
+void AssignUser(IncomingData data);
 
 
 int main()
@@ -125,4 +130,42 @@ IncomingData ParseIncomingData(string message)
 	}
 
 	return incomingData;
+}
+
+void AssignUser(IncomingData data)
+{
+	//don't add user if max capacity is already reached
+	if(activeUsers.size() < MAX_USERS)
+	{
+		string username;
+		
+		//find first username not yet taken by an active user
+		for(int i = 0; i < availableUsernames.size(); i++)
+		{
+			bool usernameTaken = false;
+			for(int j = 0; j < activeUsers.size(); j++)
+			{
+				//check if username is already taken
+				if(activeUsers[j].GetUsername() == availableUsernames[i])
+				{
+					usernameTaken = true;
+					break;
+				}
+			}
+			//if it's not, go ahead and assign username to it, and break out of the loop
+			if(!usernameTaken)
+			{
+				username = availableUsernames[i];
+				break;
+			}
+		}
+		
+		//create new user with the data from client, and store them in activeUsers
+		User newUser(data.timecode, "#000000", username);
+		activeUsers.push_back(newUser);
+	}
+	else
+	{
+		cout << "\nCannot add user because chat room is full\n";
+	}
 }
