@@ -44,7 +44,7 @@ vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPt
 void ParseIncomingData(string message);
 void AssignUser(IncomingData data);
 string GetFirstAvailableUsername();
-bool IsValidUser(User user);
+bool DataIsCorrupt(IncomingData data);
 
 
 int main()
@@ -177,33 +177,8 @@ string GetFirstAvailableUsername()
 	return username;
 }
 
-bool IsValidUser(User user)
+bool DataIsCorrupt(IncomingData data)
 {
 	const string corruptMessage = "CORRUPT";
-	//user is invalid if data is corrupt
-	if(user.GetTime() == corruptMessage)
-	{
-		return false;
-	}
-	//if we still have room in the server, it doesn't matter if they're returning or new--
-	//there's room for new users, so we'll let them pass
-	else if(activeUsers.size() < MAX_USERS)
-	{
-		return true;
-	}
-	//otherwise, we need to check if this is a user we already have on record
-	else
-	{
-		for(int i = 0; i < activeUsers.size(); i++)
-		{
-			//if we do have them on record, then we'll let them pass
-			if(activeUsers[i].GetTime() == user.GetTime())
-			{
-				return true;
-			}
-		}
-	}
-	
-	//if we've reached here, the user is a new user, but the server has no room for them
-	return false;
+	return(data.timecode == corruptMessage || data.command == corruptMessage || data.userMessageSize == corruptMessage);
 }
