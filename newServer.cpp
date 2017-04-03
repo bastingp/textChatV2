@@ -57,40 +57,65 @@ IncomingData ParseIncomingData(string message)
 {
 	const string messageRequest = "MESSAGE";
 	const string updateRequest = "UPDATE";
+	const string corruptMessage = "CORRUPT";
 	
 	//index; 
 	int i = 0;
 	//local incomingData
 	IncomingData incomingData;
 	
-	//get the timecode
-	//move past '$'
-	
 	for(int j = 0; j < 5 && i < message.size() && message[i] != '*'; j++)
 	{
 		while (i < message.size() && message[i] != '$' && message[i] != '|' && message[i] != '*')
 		{
-			if(j == 1)		//get timecode
+			//get timecode
+			if(j == 1)		
 			{
+				//Break if any characters are not numerical
+				if(!isdigit(message[i]))
+				{
+					//if so, message is corrupt
+					incomingData.timecode = corruptMessage;
+					break;
+				}
 				incomingData.timecode += message[i];
 			}
-			else if(j == 2)		//get command
+			
+			//get command
+			else if(j == 2)		
 			{
+				//Break if any characters are not uppercase letters
+				if(!isalpha(message[i]) || islower(message[i]))
+				{
+					incomingData.command = corruptMessage;
+					break;
+				}
 				incomingData.command += message[i];
 			}
-			else if(j == 3)		//get username
+			
+			//get username
+			else if(j == 3)		
 			{
 				incomingData.username += message[i];
 			}
-			else if(j == 4)		//get message or messageSize
+			
+			//get message or messageSize
+			else if(j == 4)		
 			{
 				//if the data is a message, store it in message
 				if(incomingData.command == messageRequest)
 				{
 					incomingData.message += message[i];
 				}
-				else if(incomingData.command == updateRequest)	//if the data is messageSize, store it in userMessageSize
+				//if the data is messageSize, store it in userMessageSize
+				else if(incomingData.command == updateRequest)	
 				{
+					//If message size is not a number, data is corrupt
+					if(!isdigit(message[i]))
+					{
+						incomingData.userMessageSize = corruptMessage;
+						break;
+					}
 					incomingData.userMessageSize += message[i];
 				}
 			}
