@@ -41,7 +41,7 @@ vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPt
 									"StrangerThings", "StrangerLudwig", "StrangerToadstool", "StrangerJedediah", "StrangerYevgeni"};
 
 
-void ParseIncomingData(string message);
+IncomingData ParseIncomingData(string message);
 void AssignUser(IncomingData data);
 string GetFirstAvailableUsername();
 bool DataIsCorrupt(IncomingData data);
