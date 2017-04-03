@@ -49,8 +49,8 @@ void AssignUser(IncomingData data);
 string GetFirstAvailableUsername();
 bool DataIsCorrupt(IncomingData data);
 void UnassignUser(IncomingData incomingData);
-string GetMessageThroughPipes(Fifo& recfifo)
-void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo)
+string GetMessageThroughPipes(Fifo& recfifo);
+void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);
 
 
 int main()
@@ -60,22 +60,23 @@ int main()
 	Fifo recfifo(receive_fifo);
 	Fifo sendfifo(send_fifo);
 	
-	message = GetMessageThroughPipes(recfifo);	
+	string message = GetMessageThroughPipes(recfifo);	
 	
-	GetMessageAsIncomingData(incomingData, message);
+	GetMessageAsIncomingData(message);
 	
 	vector<string> dummymessages;
 	dummymessages[0] = "server works";
 	dummymessages[1] = "fifos work";
 	
-	void SendMessageThroughPipes(vector<string> dummymessages, Fifo& sendfifo);
+	SendMessageThroughPipes(dummymessages, sendfifo);
 	
 	
 	return 0;
 }
 
-string GetMessageThroughPipes(Fifo& recfifo){
-	recfic.open(read); 
+string GetMessageThroughPipes(Fifo& recfifo)
+{
+	recfifo.openread(); 
 	string inMessage = recfifo.recv(); 
 	
 	cout << "Got message: " << inMessage << endl; //test condition 
