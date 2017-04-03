@@ -35,6 +35,9 @@ struct IncomingData
 	}
 };
 
+string receive_fifo = "chatRequest";
+string send_fifo = "chatReply";
+
 const int MAX_USERS = 10;
 vector<User> activeUsers;			//all users signed into the server
 vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPtolemy", "StrangerHelga", "StrangerAlex", 
@@ -46,18 +49,48 @@ void AssignUser(IncomingData data);
 string GetFirstAvailableUsername();
 bool DataIsCorrupt(IncomingData data);
 void UnassignUser(IncomingData incomingData);
+string ListenForMessage(Fifo& recfifo)
+void SendMessage(vector<string> messages, Fifo& sendfifo)
 
 
 int main()
 {
 	IncomingData incomingData;
 	
-	string message = "dummymessage";
+	message = ListenForMessage(receive_fifo)	
 	
 	GetMessageAsIncomingData(incomingData, message);
 	
+	vector<string> dummymessages
+	dummymessages[0] = "server works";
+	dummymessages[1] = "fifos work";
+	
+	void SendMessage(vector<string> dummymessages, Fifo& sendfifo)
+	
 	
 	return 0;
+}
+
+string ListenForMessage(Fifo& recfifo){
+	recfic.open(read); 
+	string inMessage = recfifo.recv(); 
+	
+	cout << "Got message: " << inMessage << endl; //test condition 
+	
+	return(inMessage); 
+}
+
+void SendMessage(vector<string> messages, Fifo& sendfifo)
+{
+	cout << "\n\n***Outputting messages****\n\n";
+	sendfifo.openwrite();
+	cout << "Opened pipes\n\n";
+	for(int i = 0; i < messages.size(); i++)
+	{
+		cout << messages[i] << endl;
+		sendfifo.send(messages[i]);
+	}
+	sendfifo.fifoclose();
 }
 
 
@@ -195,3 +228,4 @@ void UnassignUser(IncomingData incomingData)
 		}
 	}
 }
+
