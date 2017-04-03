@@ -67,11 +67,27 @@ int main()
 	
 	cout << "Got message: " << inMessage << endl; //test condition 
 	
-	vector<string> dummymessages;
-	// dummymessages[0] = "server works";
-	// dummymessages[1] = "fifos work";
+	incomingData = GetMessageAsIncomingDatainMessage(inMessage);
 	
-	dummymessages.push_back(inMessage);
+	bool isDataCorrupt = DataIsCorrupt(incomingData); 
+	
+	if(isDataCorrupt==false)
+	{
+		switch(incomingData.command)
+		{
+		case "LOAD": 
+			AssignUser(incomingData);
+			break; 
+		case "UNLOAD":
+			UnassignUser(incomingData);
+		//case "UPDATE" will store message and send new messages
+		//case "MESSAGE" will send new messages back. 
+		}
+	
+		
+	}//everything should be in this statement. 
+	
+	//handle load and unload and corruption check. 
 	
 	SendMessageThroughPipes(dummymessages, sendfifo);
 	
@@ -239,4 +255,3 @@ void UnassignUser(IncomingData incomingData)
 		}
 	}
 }
-
