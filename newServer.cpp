@@ -43,6 +43,7 @@ vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPt
 
 void ParseIncomingData(string message);
 void AssignUser(IncomingData data);
+string GetFirstAvailableUsername();
 
 
 int main()
@@ -134,32 +135,10 @@ IncomingData ParseIncomingData(string message)
 
 void AssignUser(IncomingData data)
 {
-	//don't add user if max capacity is already reached
 	if(activeUsers.size() < MAX_USERS)
 	{
-		string username;
-		
-		//find first username not yet taken by an active user
-		for(int i = 0; i < availableUsernames.size(); i++)
-		{
-			bool usernameTaken = false;
-			for(int j = 0; j < activeUsers.size(); j++)
-			{
-				//check if username is already taken
-				if(activeUsers[j].GetUsername() == availableUsernames[i])
-				{
-					usernameTaken = true;
-					break;
-				}
-			}
-			//if it's not, go ahead and assign username to it, and break out of the loop
-			if(!usernameTaken)
-			{
-				username = availableUsernames[i];
-				break;
-			}
-		}
-		
+		string username = GetFirstAvailableUsername();
+
 		//create new user with the data from client, and store them in activeUsers
 		User newUser(data.timecode, "#000000", username);
 		activeUsers.push_back(newUser);
@@ -168,4 +147,31 @@ void AssignUser(IncomingData data)
 	{
 		cout << "\nCannot add user because chat room is full\n";
 	}
+}
+
+string GetFirstAvailableUsername()
+{
+	string username;
+	//find first username not yet taken by an active user
+	for(int i = 0; i < availableUsernames.size(); i++)
+	{
+		bool usernameTaken = false;
+		for(int j = 0; j < activeUsers.size(); j++)
+		{
+			//check if username is already taken
+			if(activeUsers[j].GetUsername() == availableUsernames[i])
+			{
+				usernameTaken = true;
+				break;
+			}
+		}
+		//if it's not, go ahead and assign username to it, and break out of the loop
+		if(!usernameTaken)
+		{
+			username = availableUsernames[i];
+			break;
+		}
+	}
+	
+	return username;
 }
