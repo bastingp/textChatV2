@@ -56,20 +56,27 @@ void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);
 int main()
 {
 	IncomingData incomingData;
+	
 	// create the FIFOs for communication
 	Fifo recfifo(receive_fifo);
 	Fifo sendfifo(send_fifo);
 	
-	string message = GetMessageThroughPipes(recfifo);	
+	//Open fifo, get message from client
+	recfifo.openread(); 
+	string inMessage = recfifo.recv(); 
 	
-	GetMessageAsIncomingData(message);
+	cout << "Got message: " << inMessage << endl; //test condition 
 	
 	vector<string> dummymessages;
-	dummymessages[0] = "server works";
-	dummymessages[1] = "fifos work";
+	// dummymessages[0] = "server works";
+	// dummymessages[1] = "fifos work";
+	
+	dummymessages.push_back(inMessage);
 	
 	SendMessageThroughPipes(dummymessages, sendfifo);
 	
+	//Close fifo
+	recfifo.fifoclose();	
 	
 	return 0;
 }
