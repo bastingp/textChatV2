@@ -18,8 +18,8 @@ string get_username(string message);
 
 int main() 
 {
-	const string load_message = "$528|LOAD|*";
-	const string unload_message = "$528|UNLOAD|user1*";
+	const string load_message = "$123456|LOAD|*";
+	const string unload_message = "$123456|UNLOAD|user1*";
 	const string status_check_message = "$STATUS%*";
 	string word;
 	string message;
@@ -33,100 +33,101 @@ int main()
 	// // Call server to get results
 	sendfifo.openwrite();
 	sendfifo.send(load_message);
+	cout << "sent to server: " << load_message;
 
 	/* Get a message from a server */
 	//cout << "Content-Type: text/plain\n\n";
 	recfifo.openread();
 	reply = recfifo.recv();
-	username = get_username(reply);
-	cout << "\n\nYou've been assigned " << username << endl;
-	
+	//username = get_username(reply);
+	//cout << "\n\nYou've been assigned " << username << endl;
+	cout << "received from server: "<< reply << endl;
 	recfifo.fifoclose();
 	sendfifo.fifoclose();
 
-	if(username == "FULL")
-	{
-		cout << "\n\nChat room is full. Try another time.\n";
-		return 0;
-	}
+	// if(username == "FULL")
+	// {
+	// 	cout << "\n\nChat room is full. Try another time.\n";
+	// 	return 0;git
+	// }
 	
-	while (1) 
-	{
-		int answer;
-		do
-		{
-			cout << "\nMessage or update or leave or check status?   (1 or 2 or 3 or 4)\n";
-			cin >> answer;
-		}while(answer != 1 && answer != 2 && answer != 3 && answer != 4);
+	// while (1) 
+	// {
+	// 	int answer;
+	// 	do
+	// 	{
+	// 		cout << "\nMessage or update or leave or check status?   (1 or 2 or 3 or 4)\n";
+	// 		cin >> answer;
+	// 	}while(answer != 1 && answer != 2 && answer != 3 && answer != 4);
 		
-		cin.ignore();
-		cin.clear();
-		if(answer == 1)
-		{
-			message = "$MESSAGE%" + username + "%";
-			cout << "Enter a message:";
-			getline(cin, word);
-			word += "*";
-			message += word;
-		}
-		else if(answer == 2)
-		{
-			int size;
-			message = "$UPDATE%" + username + "%";
-			cout << "\nHow big do you have?    ";
-			cin >> size;
-			message += to_string(size);
-			message += "*";
-		}
-		else if(answer == 3)
-		{
-			message = unload_message + username + "*";
-			cout << "Send:" << message << endl;
-			sendfifo.openwrite();
-			sendfifo.send(message);
-			sendfifo.fifoclose();
-			break;
-		}
-		else
-		{
-			message = status_check_message;
-		}
+	// 	cin.ignore();
+	// 	cin.clear();
+	// 	if(answer == 1)
+	// 	{
+	// 		message = "$MESSAGE%" + username + "%";
+	// 		cout << "Enter a message:";
+	// 		getline(cin, word);
+	// 		word += "*";
+	// 		message += word;
+	// 	}
+	// 	else if(answer == 2)
+	// 	{
+	// 		int size;
+	// 		message = "$UPDATE%" + username + "%";
+	// 		cout << "\nHow big do you have?    ";
+	// 		cin >> size;
+	// 		message += to_string(size);
+	// 		message += "*";
+	// 	}
+	// 	else if(answer == 3)
+	// 	{
+	// 		message = unload_message + username + "*";
+	// 		cout << "Send:" << message << endl;
+	// 		sendfifo.openwrite();
+	// 		sendfifo.send(message);
+	// 		sendfifo.fifoclose();
+	// 		break;
+	// 	}
+	// 	else
+	// 	{
+	// 		message = status_check_message;
+	// 	}
 
-		cout << "Send:" << message << endl;
-		sendfifo.openwrite();
-		sendfifo.send(message);
+	// 	cout << "Send:" << message << endl;
+	// 	sendfifo.openwrite();
+	// 	sendfifo.send(message);
 	
-		string all_replies;
-		if(answer == 2)
-		{
-			cout << "\nGoing to open read fifo...\n";
-			recfifo.openread();
-			reply = recfifo.recv();
-			while(reply.find("$END") > 0)
-			{
-				all_replies += "%" + reply;
-				if(reply == "$UPTODATE*")
-				{
-					break;
-				}
-				reply = recfifo.recv();
-			}
-			recfifo.fifoclose();
-			all_replies += "*";
-			cout << all_replies;
-		}
-		else if(answer == 4)
-		{
-			cout << "\nGoing to open read fifo...\n";
-			recfifo.openread();
-			reply = recfifo.recv();
-			recfifo.fifoclose();
+	// 	string all_replies;
+	// 	if(answer == 2)
+	// 	{
+	// 		cout << "\nGoing to open read fifo...\n";
+	// 		recfifo.openread();
+	// 		reply = recfifo.recv();
+	// 		while(reply.find("$END") > 0)
+	// 		{
+	// 			all_replies += "%" + reply;
+	// 			if(reply == "$UPTODATE*")
+	// 			{
+	// 				break;
+	// 			}
+	// 			reply = recfifo.recv();
+	// 		}
+	// 		recfifo.fifoclose();
+	// 		all_replies += "*";
+	// 		cout << all_replies;
+	// 	}
+	// 	else if(answer == 4)
+	// 	{
+	// 		cout << "\nGoing to open read fifo...\n";
+	// 		recfifo.openread();
+	// 		reply = recfifo.recv();
+	// 		recfifo.fifoclose();
 			
-			cout << reply;
-		}
+	// 		cout << reply;
+	// 	}
 		
-		sendfifo.fifoclose();
-	}
+	// 	sendfifo.fifoclose();
+	// }
 	
 	return 0;
 }
