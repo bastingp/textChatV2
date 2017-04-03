@@ -41,7 +41,7 @@ vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPt
 									"StrangerThings", "StrangerLudwig", "StrangerToadstool", "StrangerJedediah", "StrangerYevgeni"};
 
 
-IncomingData ParseIncomingData(string message);
+IncomingData GetMessageAsIncomingData(string message);
 void AssignUser(IncomingData data);
 string GetFirstAvailableUsername();
 bool DataIsCorrupt(IncomingData data);
@@ -53,14 +53,14 @@ int main()
 	
 	string message = "dummymessage";
 	
-	ParseIncomingData(incomingData, message);
+	GetMessageAsIncomingData(incomingData, message);
 	
 	
 	return 0;
 }
 
 
-IncomingData ParseIncomingData(string message)
+IncomingData GetMessageAsIncomingData(string message)
 {
 	const string messageRequest = "MESSAGE";
 	const string updateRequest = "UPDATE";
