@@ -49,29 +49,32 @@ void AssignUser(IncomingData data);
 string GetFirstAvailableUsername();
 bool DataIsCorrupt(IncomingData data);
 void UnassignUser(IncomingData incomingData);
-string ListenForMessage(Fifo& recfifo)
-void SendMessage(vector<string> messages, Fifo& sendfifo)
+string GetMessageThroughPipes(Fifo& recfifo)
+void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo)
 
 
 int main()
 {
 	IncomingData incomingData;
+	// create the FIFOs for communication
+	Fifo recfifo(receive_fifo);
+	Fifo sendfifo(send_fifo);
 	
-	message = ListenForMessage(receive_fifo)	
+	message = GetMessageThroughPipes(recfifo);	
 	
 	GetMessageAsIncomingData(incomingData, message);
 	
-	vector<string> dummymessages
+	vector<string> dummymessages;
 	dummymessages[0] = "server works";
 	dummymessages[1] = "fifos work";
 	
-	void SendMessage(vector<string> dummymessages, Fifo& sendfifo)
+	void SendMessageThroughPipes(vector<string> dummymessages, Fifo& sendfifo);
 	
 	
 	return 0;
 }
 
-string ListenForMessage(Fifo& recfifo){
+string GetMessageThroughPipes(Fifo& recfifo){
 	recfic.open(read); 
 	string inMessage = recfifo.recv(); 
 	
@@ -80,7 +83,7 @@ string ListenForMessage(Fifo& recfifo){
 	return(inMessage); 
 }
 
-void SendMessage(vector<string> messages, Fifo& sendfifo)
+void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo)
 {
 	cout << "\n\n***Outputting messages****\n\n";
 	sendfifo.openwrite();
@@ -221,7 +224,7 @@ void UnassignUser(IncomingData incomingData)
 {
 	for(int i = 0; i < activeUsers.size(); i++)
 	{
-		if(activeUsers[i].GetUsername == incomingData.username || activeUsers[i].GetTime() == incomingData.timecode)
+		if(activeUsers[i].GetUsername() == incomingData.username || activeUsers[i].GetTime() == incomingData.timecode)
 		{
 			activeUsers.erase(activeUsers.begin()+i);
 			break;
