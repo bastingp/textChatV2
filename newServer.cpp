@@ -261,6 +261,7 @@ void AssignUser(IncomingData data)
 
 string GetFirstAvailableUsername()
 {
+	cout << "\n\n\n\n\n\nGetting available username\n\n";
 	string username;
 	//find first username not yet taken by an active user
 	for(int i = 0; i < availableUsernames.size(); i++)
@@ -268,6 +269,7 @@ string GetFirstAvailableUsername()
 		bool usernameTaken = false;
 		for(int j = 0; j < activeUsers.size(); j++)
 		{
+			cout << "user " << to_string(j) << " has username " << activeUsers[j].GetUsername() << endl << endl;
 			//check if username is already taken
 			if(activeUsers[j].GetUsername() == availableUsernames[i])
 			{

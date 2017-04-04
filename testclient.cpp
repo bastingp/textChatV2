@@ -9,6 +9,7 @@
 #include <sstream>
 #include <algorithm>
 #include "fifo.h"
+#include <time.h>
 
 using namespace std;
 string receive_fifo = "chatReply";
@@ -18,13 +19,17 @@ string get_username(string message);
 
 int main() 
 {
-	string load_message = "$123456|LOAD|*";
-	string unload_message = "$123456|UNLOAD|user1*";
+	clock_t t = clock();
+	cout << t << endl << endl;
+	string load_message = "$" + to_string(t) + "|LOAD|*";
+	string unload_message = "$" + to_string(t) + "|UNLOAD|user1*";
 	string status_check_message = "$STATUS%*";
 	string word;
 	string message;
 	string reply;
 	string username = "";
+	
+	
 	
 	// create the FIFOs for communication
 	Fifo recfifo(receive_fifo);
