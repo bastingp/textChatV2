@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <sstream>
 #include "fifo.h"
 #include "USER_H.h"
 
@@ -38,10 +39,11 @@ struct IncomingData
 string receive_fifo = "chatRequest";
 string send_fifo = "chatReply";
 
-const int MAX_USERS = 4;
+const int MAX_USERS = 2;
 vector<User> activeUsers;			//all users signed into the server
 vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPtolemy", "StrangerHelga", "StrangerAlex", 
 									"StrangerThings", "StrangerLudwig", "StrangerToadstool", "StrangerJedediah", "StrangerYevgeni"};
+vector<string> storedMessages;
 
 
 IncomingData GetMessageAsIncomingData(string message);		//parses message, stores its data into an IncomingData struct, and returns the data
@@ -51,6 +53,8 @@ bool DataIsCorrupt(IncomingData data);				//returns true if any of the data in '
 void UnassignUser(IncomingData incomingData);			//removes user with matching data in 'data' from activeUsers
 void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);			//sends messages through fifo pipes
 void SendMessageThroughPipes(string message, Fifo& sendfifo);					//sends single message through fifo pipes
+vector<string> GetUpdateMessages(IncomingData data);						//returns vector of messages user hasn't received yet, 
+																			//or "$UPTODATE*" if they already have all the messages
 
 
 int main()
@@ -98,11 +102,14 @@ int main()
 			}
 			else if(incomingData.command == "UPDATE")
 			{
-				//handle update
+				vector<string> updateMessages = GetUpdateMessages(incomingData);
+				SendMessageThroughPipes(updateMessages, sendfifo);
 			}
 			else if(incomingData.command == "MESSAGE")
 			{
-				//handle message
+				storedMessages.push_back(incomingData.message);
+				vector<string> updateMessages = GetUpdateMessages(incomingData);
+				SendMessageThroughPipes(updateMessages, sendfifo);
 			}
 			else
 			{
@@ -164,7 +171,7 @@ IncomingData GetMessageAsIncomingData(string message)
 	//local incomingData
 	IncomingData incomingData;
 	
-	for(int j = 0; j < 5 && i < message.size() && message[i] != '*'; j++)
+	for(int j = 0; j < 6 && i < message.size() && message[i] != '*'; j++)
 	{
 		while (i < message.size() && message[i] != '$' && message[i] != '|' && message[i] != '*')
 		{
@@ -220,6 +227,18 @@ IncomingData GetMessageAsIncomingData(string message)
 					}
 					incomingData.userMessageSize += message[i];
 				}
+			}
+			
+			//if message command, also store client's message size
+			else if(j == 5)
+			{
+				//If message size is not a number, data is corrupt
+				if(!isdigit(message[i]))
+				{
+					incomingData.userMessageSize = corruptMessage;
+					break;
+				}
+				incomingData.userMessageSize += message[i];
 			}
 			i++;
 		}
@@ -288,4 +307,31 @@ void UnassignUser(IncomingData incomingData)
 			break;
 		}
 	}
+}
+
+vector<string> GetUpdateMessages(IncomingData data)
+{
+	vector<string> updateMessages;
+	stringstream numMessages;
+	numMessages << storedMessages.size();
+	
+	if(data.userMessageSize == numMessages.str())
+	{
+		updateMessages.push_back("$UPTODATE*");
+	}
+	else if(data.userMessageSize < numMessages.str())
+	{
+		for(int i = atoi(data.userMessageSize.c_str()); i < storedMessages.size(); i++)
+		{
+			updateMessages.push_back(storedMessages[i]);
+		}
+	}
+	else
+	{
+		//this should never happen
+		cout << "\n\n*****ERROR: User has more messages than server*****\n\n";
+		updateMessages.push_back("$UPTODATE*");
+	}
+	
+	return updateMessages;
 }
