@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <time.h>
 #include "fifo.h"
 #include "USER_H.h"
 
@@ -55,6 +56,8 @@ void SendMessageThroughPipes(string message, Fifo& sendfifo);					//sends single
 
 int main()
 {
+	clock_t t = clock();
+	
 	IncomingData incomingData;
 	const string message_command = "MESSAGE";
 	const string update_command = "UPDATE";
