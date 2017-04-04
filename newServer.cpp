@@ -74,31 +74,34 @@ int main()
 		
 		cout << "Got message: " << inMessage << endl; //test condition 
 		
-		incomingData = GetMessageAsIncomingDatainMessage(inMessage);
+		incomingData = GetMessageAsIncomingData(inMessage);
 		
 		if(DataIsCorrupt(incomingData) == false)
 		{
 			cout << "Got command: " << incomingData.command << endl << endl;
-			switch(incomingData.command)
+			if(incomingData.command == "LOAD")
 			{
-			case "LOAD": 
 				AssignUser(incomingData);
-				break; 
-			case "UNLOAD":
+			}
+			else if(incomingData.command == "UNLOAD")
+			{
 				UnassignUser(incomingData);
-				break;
-			case "UPDATE":
-				//send new messages and check user timeout
-				break;
-			case "MESSAGE":
-				//store message and send new messages back
-				break;
-			default:
-			//command not recognized--server shuts down
+			}
+			else if(incomingData.command == "UPDATE")
+			{
+				//handle update
+			}
+			else if(incomingData.command == "MESSAGE")
+			{
+				//handle message
+			}
+			else
+			{
+				//command not recognized--handle this
 				cout << "\n\n******Command not recognized******\n\n";
-				return;
-			}			
-		}//everything should be in this statement. 
+				return 0;
+			}
+		}
 		else
 		{
 			//handle corrupt data
