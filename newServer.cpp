@@ -56,43 +56,57 @@ void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);
 int main()
 {
 	IncomingData incomingData;
+	const string message_command = "MESSAGE";
+	const string update_command = "UPDATE";
+	const string load_command = "LOAD";
+	const string unload_command = "UNLOAD";
 	
 	// create the FIFOs for communication
 	Fifo recfifo(receive_fifo);
 	Fifo sendfifo(send_fifo);
 	
-	//Open fifo, get message from client
-	recfifo.openread(); 
-	string inMessage = recfifo.recv(); 
-	
-	cout << "Got message: " << inMessage << endl; //test condition 
-	
-	incomingData = GetMessageAsIncomingDatainMessage(inMessage);
-	
-	bool isDataCorrupt = DataIsCorrupt(incomingData); 
-	
-	if(isDataCorrupt==false)
+	while(1)
 	{
-		switch(incomingData.command)
-		{
-		case "LOAD": 
-			AssignUser(incomingData);
-			break; 
-		case "UNLOAD":
-			UnassignUser(incomingData);
-		//case "UPDATE" will store message and send new messages
-		//case "MESSAGE" will send new messages back. 
-		}
-	
+		cout << "Current number of users: " << to_string(activeUsers.size()) << endl << endl;
+		//Open fifo, get message from client
+		recfifo.openread(); 
+		string inMessage = recfifo.recv(); 
 		
-	}//everything should be in this statement. 
-	
-	//handle load and unload and corruption check. 
-	
-	SendMessageThroughPipes(dummymessages, sendfifo);
-	
-	//Close fifo
-	recfifo.fifoclose();	
+		cout << "Got message: " << inMessage << endl; //test condition 
+		
+		incomingData = GetMessageAsIncomingDatainMessage(inMessage);
+		
+		if(DataIsCorrupt(incomingData) == false)
+		{
+			cout << "Got command: " << incomingData.command << endl << endl;
+			switch(incomingData.command)
+			{
+			case "LOAD": 
+				AssignUser(incomingData);
+				break; 
+			case "UNLOAD":
+				UnassignUser(incomingData);
+				break;
+			case "UPDATE":
+				//send new messages and check user timeout
+				break;
+			case "MESSAGE":
+				//store message and send new messages back
+				break;
+			default:
+			//command not recognized--server shuts down
+				cout << "\n\n******Command not recognized******\n\n";
+				return;
+			}			
+		}//everything should be in this statement. 
+		else
+		{
+			//handle corrupt data
+		}
+		
+		//Close fifo
+		recfifo.fifoclose();	
+	}
 	
 	return 0;
 }
