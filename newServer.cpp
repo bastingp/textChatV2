@@ -38,7 +38,7 @@ struct IncomingData
 string receive_fifo = "chatRequest";
 string send_fifo = "chatReply";
 
-const int MAX_USERS = 10;
+const int MAX_USERS = 2;
 vector<User> activeUsers;			//all users signed into the server
 vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPtolemy", "StrangerHelga", "StrangerAlex", 
 									"StrangerThings", "StrangerLudwig", "StrangerToadstool", "StrangerJedediah", "StrangerYevgeni"};
@@ -82,9 +82,18 @@ int main()
 			cout << "Got command: " << incomingData.command << endl << endl;
 			if(incomingData.command == "LOAD")
 			{
-				AssignUser(incomingData);
-				string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername() + "*";
-				SendMessageThroughPipes(loadMessage, sendfifo);
+				if(activeUsers.size() < MAX_USERS)
+				{
+					AssignUser(incomingData);
+					string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername() + "*";
+					SendMessageThroughPipes(loadMessage, sendfifo);
+				}
+				else
+				{
+					string chatRoomFullMessage = "$USER|FULL*";
+					SendMessageThroughPipes(chatRoomFullMessage, sendfifo);
+				}
+				
 			}
 			else if(incomingData.command == "UNLOAD")
 			{

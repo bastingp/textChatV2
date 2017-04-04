@@ -54,11 +54,14 @@ int main()
 	/////////UNASSIGNMENT TEST////////////////
 
 
-	sendfifo.openwrite();
-	sendfifo.send(unload_message);
-	cout << "sent to server:" << unload_message << endl;
+	if(username != "FULL")
+	{
+		sendfifo.openwrite();
+		sendfifo.send(unload_message);
+		cout << "sent to server:" << unload_message << endl;
 
-	sendfifo.fifoclose();
+		sendfifo.fifoclose();
+	}
 	
 	return 0;
 }
