@@ -137,8 +137,9 @@ int main()
 				sendfifo.openwrite();
 				unload_message = "$" + to_string(t) + "|UNLOAD|" + username +"*";
 				sendfifo.send(unload_message);
-				cout <<"sent to server:" << unload_message;
+				cout <<"sent to server:" << unload_message << endl;
 				sendfifo.fifoclose();
+				username="";
 				break;
 			}
 
