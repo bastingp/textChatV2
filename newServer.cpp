@@ -10,7 +10,6 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <time.h>
 #include "fifo.h"
 #include "USER_H.h"
 
@@ -39,7 +38,7 @@ struct IncomingData
 string receive_fifo = "chatRequest";
 string send_fifo = "chatReply";
 
-const int MAX_USERS = 2;
+const int MAX_USERS = 4;
 vector<User> activeUsers;			//all users signed into the server
 vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPtolemy", "StrangerHelga", "StrangerAlex", 
 									"StrangerThings", "StrangerLudwig", "StrangerToadstool", "StrangerJedediah", "StrangerYevgeni"};
@@ -55,14 +54,8 @@ void SendMessageThroughPipes(string message, Fifo& sendfifo);					//sends single
 
 
 int main()
-{
-	clock_t t = clock();
-	
+{	
 	IncomingData incomingData;
-	const string message_command = "MESSAGE";
-	const string update_command = "UPDATE";
-	const string load_command = "LOAD";
-	const string unload_command = "UNLOAD";
 	
 	// create the FIFOs for communication
 	Fifo recfifo(receive_fifo);
@@ -175,6 +168,8 @@ IncomingData GetMessageAsIncomingData(string message)
 	{
 		while (i < message.size() && message[i] != '$' && message[i] != '|' && message[i] != '*')
 		{
+			//first time through, read past '$'
+			
 			//get timecode
 			if(j == 1)		
 			{
