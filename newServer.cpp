@@ -44,14 +44,13 @@ vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPt
 									"StrangerThings", "StrangerLudwig", "StrangerToadstool", "StrangerJedediah", "StrangerYevgeni"};
 
 
-IncomingData GetMessageAsIncomingData(string message);
-void AssignUser(IncomingData data);
-string GetFirstAvailableUsername();
-bool DataIsCorrupt(IncomingData data);
-void UnassignUser(IncomingData incomingData);
-string GetMessageThroughPipes(Fifo& recfifo);
-void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);
-void SendMessageThroughPipes(string message, Fifo& sendfifo);
+IncomingData GetMessageAsIncomingData(string message);		//parses message, stores its data into an IncomingData struct, and returns the data
+void AssignUser(IncomingData data);					//adds user to activeUsers
+string GetFirstAvailableUsername();					//returns first available username from availableUsernames
+bool DataIsCorrupt(IncomingData data);				//returns true if any of the data in 'data' is corrupt
+void UnassignUser(IncomingData incomingData);			//removes user with matching data in 'data' from activeUsers
+void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);			//sends messages through fifo pipes
+void SendMessageThroughPipes(string message, Fifo& sendfifo);					//sends single message through fifo pipes
 
 
 int main()
@@ -82,12 +81,14 @@ int main()
 			cout << "Got command: " << incomingData.command << endl << endl;
 			if(incomingData.command == "LOAD")
 			{
+				//if there's room on the server, add them to the chat room
 				if(activeUsers.size() < MAX_USERS)
 				{
 					AssignUser(incomingData);
 					string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername() + "*";
 					SendMessageThroughPipes(loadMessage, sendfifo);
 				}
+				//otherwise, let them know the server is already full
 				else
 				{
 					string chatRoomFullMessage = "$USER|FULL*";
@@ -130,21 +131,10 @@ int main()
 	return 0;
 }
 
-string GetMessageThroughPipes(Fifo& recfifo)
-{
-	recfifo.openread(); 
-	string inMessage = recfifo.recv(); 
-	
-	cout << "Got message: " << inMessage << endl; //test condition 
-	
-	return(inMessage); 
-}
-
 void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo)
 {
-	cout << "\n\n***Outputting messages****\n\n";
 	sendfifo.openwrite();
-	cout << "Opened pipes\n\n";
+	cout << "Sending: ";
 	for(int i = 0; i < messages.size(); i++)
 	{
 		cout << messages[i] << endl;
@@ -156,11 +146,9 @@ void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo)
 
 void SendMessageThroughPipes(string message, Fifo& sendfifo)
 {
-	cout << "\n\n***Outputting messages****\n\n";
 	sendfifo.openwrite();
-	cout << "Opened pipes\n\n";
 	
-	cout << message << endl;
+	cout << "Sending: " << message << endl;
 	sendfifo.send(message);
 	
 	sendfifo.send("$END");
@@ -261,7 +249,6 @@ void AssignUser(IncomingData data)
 
 string GetFirstAvailableUsername()
 {
-	cout << "\n\n\n\n\n\nGetting available username\n\n";
 	string username;
 	//find first username not yet taken by an active user
 	for(int i = 0; i < availableUsernames.size(); i++)
@@ -269,7 +256,6 @@ string GetFirstAvailableUsername()
 		bool usernameTaken = false;
 		for(int j = 0; j < activeUsers.size(); j++)
 		{
-			cout << "user " << to_string(j) << " has username " << activeUsers[j].GetUsername() << endl << endl;
 			//check if username is already taken
 			if(activeUsers[j].GetUsername() == availableUsernames[i])
 			{
