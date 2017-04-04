@@ -107,7 +107,8 @@ int main()
 			}
 			else if(incomingData.command == "MESSAGE")
 			{
-				storedMessages.push_back(incomingData.message);
+				string messageFromUser = incomingData.username + "|" + incomingData.message;
+				storedMessages.push_back(messageFromUser);
 				vector<string> updateMessages = GetUpdateMessages(incomingData);
 				SendMessageThroughPipes(updateMessages, sendfifo);
 			}
