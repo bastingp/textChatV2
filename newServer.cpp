@@ -102,19 +102,21 @@ int main()
 			{
 				//command not recognized--handle this
 				cout << "\n\n******Command not recognized******\n\n";
-				return 0;
+				SendMessageThroughPipes("$CORRUPT*", sendfifo);
 			}
 		}
 		else
 		{
 			//handle corrupt data
 			cout << "\n\n******Data is corrupt******\n\n";
-			return 0;
+			SendMessageThroughPipes("$CORRUPT*", sendfifo);
 		}
 		
 		//Close fifo
 		recfifo.fifoclose();	
 	}
+	
+	cout << "\n\n****out of while loop****";
 	
 	return 0;
 }

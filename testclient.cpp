@@ -18,9 +18,9 @@ string get_username(string message);
 
 int main() 
 {
-	const string load_message = "$123456|LOAD|*";
-	const string unload_message = "$123456|UNLOAD|user1*";
-	const string status_check_message = "$STATUS%*";
+	string load_message = "$123456|LOAD|*";
+	string unload_message = "$123456|UNLOAD|user1*";
+	string status_check_message = "$STATUS%*";
 	string word;
 	string message;
 	string reply;
@@ -31,11 +31,14 @@ int main()
 	Fifo sendfifo(send_fifo);
 
 	/////ASSIGNMENT TEST/////////
+	cout << "\n\nAbout to open send pipe\n\n";
 	sendfifo.openwrite();
+	cout << "\n\nSuccess opening send pipe\n\n";
+	
 	sendfifo.send(load_message);
-	cout << "sent to server: " << load_message;
 
 
+	cout << "About to open receive pipe";
 	recfifo.openread();
 	reply = recfifo.recv();
 	username = get_username(reply);
@@ -45,9 +48,8 @@ int main()
 
 	cout << "asigned user:" << username <<endl;
 
-	string input;
 	cout << "Continue? (Type anything):";
-	cin >> input;
+	cin.ignore();
 
 	/////////UNASSIGNMENT TEST////////////////
 
@@ -72,18 +74,13 @@ string get_username(string message)
 		index++;
 	}
 	index++;
-	//go past USER%
+	//go past USER|
 	while(message[index] != '|')
 	{
 		index++;
 	}
 	index++;
 
-	while(message[index] != '|')
-	{
-		index++;
-	}
-	index++;
 	//get username
 	while(message[index] != '*')
 	{
