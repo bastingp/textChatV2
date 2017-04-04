@@ -51,6 +51,7 @@ bool DataIsCorrupt(IncomingData data);
 void UnassignUser(IncomingData incomingData);
 string GetMessageThroughPipes(Fifo& recfifo);
 void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);
+void SendMessageThroughPipes(string message, Fifo& sendfifo);
 
 
 int main()
@@ -82,6 +83,8 @@ int main()
 			if(incomingData.command == "LOAD")
 			{
 				AssignUser(incomingData);
+				string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername() + "*";
+				SendMessageThroughPipes(loadMessage, sendfifo);
 			}
 			else if(incomingData.command == "UNLOAD")
 			{
@@ -105,6 +108,8 @@ int main()
 		else
 		{
 			//handle corrupt data
+			cout << "\n\n******Data is corrupt******\n\n";
+			return 0;
 		}
 		
 		//Close fifo
@@ -134,6 +139,21 @@ void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo)
 		cout << messages[i] << endl;
 		sendfifo.send(messages[i]);
 	}
+	sendfifo.send("$END");
+	sendfifo.fifoclose();
+}
+
+void SendMessageThroughPipes(string message, Fifo& sendfifo)
+{
+	cout << "\n\n***Outputting messages****\n\n";
+	sendfifo.openwrite();
+	cout << "Opened pipes\n\n";
+	
+	cout << message << endl;
+	sendfifo.send(message);
+	
+	sendfifo.send("$END");
+
 	sendfifo.fifoclose();
 }
 
