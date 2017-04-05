@@ -109,6 +109,7 @@ int main()
 			{
 				vector<string> updateMessages = GetUpdateMessages(incomingData);
 				SendMessageThroughPipes(updateMessages, sendfifo);
+				CheckForInactiveUsers(activeUsers, incomingData);
 			}
 			else if(incomingData.command == "MESSAGE")
 			{
@@ -130,8 +131,6 @@ int main()
 			cout << "\n\n******Data is corrupt******\n\n";
 			SendMessageThroughPipes("$CORRUPT", sendfifo);
 		}
-		
-		CheckForInactiveUsers(activeUsers, incomingData);
 				
 		//Close fifo
 		recfifo.fifoclose();
@@ -360,6 +359,7 @@ void CheckForInactiveUsers(vector<User>& users, IncomingData data)
 	    //if a user hasn't updated in MAX_WAIT amount of time, boot them off (they're gone)
       	if ((currentTime - users[i].GetLastUpdateTime()) >= MAX_WAIT)
 		{
+			cout << "\n\n****Booting off " << users[i].GetUsername() << "*******\n\n";
             users.erase(users.begin()+i);
     	}
 
