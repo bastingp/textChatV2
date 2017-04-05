@@ -339,6 +339,8 @@ vector<string> GetUpdateMessages(IncomingData data)
 	{
 		//this should never happen
 		cout << "\n\n*****ERROR: User has more messages than server*****\n\n";
+		cout << "Server has: " << to_string(storedMessages.size()) << endl;
+		cout << "User has: " << data.userMessageSize << endl << endl;
 		updateMessages.push_back("$UPTODATE");
 	}
 	
