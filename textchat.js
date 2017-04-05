@@ -8,7 +8,7 @@ const MAX_UPDATE_INTERVAL = 10000;
 
 function parseResponse(response)
 {
-	console.log("Parsing response....");
+	console.log("Got reponse from CGI: " + response);
 	var user_command = "USER";
 	var update_command = "UPDATE";
 	
@@ -86,6 +86,7 @@ function assignUsername(response)
 	}	
 	
 	//get username
+	username = "";
 	while(i < response.length)
 	{
 		if(response[i] == '*')
@@ -135,6 +136,8 @@ function updateMessages(response)
 	var message = '';
 	while(i < response.length && response[i] != '*')
 	{
+		sendUser = '';
+		message = '';
 		//get the username for the message sent
 		while(i < response.length && response[i] != '*' && response[i] != '|')
 		{
@@ -149,6 +152,8 @@ function updateMessages(response)
 			message += response[i];
 			i++;
 		}
+		//increment number of messages received
+		numMessages++;
 		
 		//if sendUser == user, we want the chatbox to print 'You'
 		if(sendUser == username)
@@ -162,6 +167,7 @@ function updateMessages(response)
 
 function updateChatBox(messages, user)
 {		
+	console.log("Total messages: " + numMessages);
 	//Check if messages is an array, then add all messages to bottom of chatbox
 	if(messages.constructor == Array)
 	{

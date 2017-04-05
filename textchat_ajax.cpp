@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include <iostream>
 #include <fstream>
+#include <string>
 #include "fifo.h"
 
 using namespace std;
@@ -25,6 +26,7 @@ string receive_fifo = "chatReply";
 string send_fifo = "chatRequest";
 
 string get_command(string message);
+string get_number_of_messages(string message);
 
 int main() 
 {	
@@ -35,45 +37,38 @@ int main()
 	// Create AJAX objects to recieve information from web page.
 	form_iterator user_input = cgi.getElement("message");
 	
-	  // create the FIFOs for communication
-	Fifo recfifo(receive_fifo);
-	Fifo sendfifo(send_fifo);
-	
 	string message = **user_input;
 	
 	//Tell javascript how to read output
 	cout << "Content-Type: text/plain\n\n";
 	
-	//Send message to server
-	sendfifo.openwrite();
-	sendfifo.send(message);
-	
+	string reply;
 	//if page is unloading, no reason to wait for response from server
 	if(get_command(message) == unload_command)
 	{
-		sendfifo.fifoclose();
 		return 0;
 	}
-	
-	//Get all messages from the server, and store in string
-	recfifo.openread();
-	string reply = "";
-	string temp = recfifo.recv();
-	while(temp.find("$END") > 0)
+	else if(get_command(message) == "LOAD")
 	{
-		reply += "|" + temp;
-		if(temp.find("$UPTODATE*") != string::npos)
-		{
-			break;
-		}
-		temp = recfifo.recv();
+		reply = "|$USER|StrangerBob*";
+	}
+	else if(get_command(message) == "MESSAGE")
+	{
+		reply = "$UPDATE|StrangerHelga|Hi! I'm Helga!|StrangerBob|This message should begin with 'You:'";
+	}
+	else if(get_command(message) == "UPDATE")
+	{
+		// if(stoi(get_number_of_messages(message)) <= 5)
+		// {
+			reply = "$UPDATE|StrangerHelga|Hi! I'm Helga!|StrangerBob|This message should begin with 'You:'";
+		// }
+		// else
+		// {
+			// reply = "$UPTODATE*";
+		// }
 	}
 	
-	recfifo.fifoclose();
-	reply += "*";
 	cout << reply;
-	
-	sendfifo.fifoclose();
 	
 	return 0;
 }
@@ -95,7 +90,7 @@ string get_command(string message)
 		index++;
 	}
 	index++;
-	//go past MESSAGE|
+	//get command
 	while(message[index] != '|' && index < message.size())
 	{
 		command += message[index];
@@ -103,4 +98,49 @@ string get_command(string message)
 	}
 	
 	return command;
+}
+
+string get_number_of_messages(string message)
+{
+	int index = 0;
+	
+	//go past $
+	while(message[index] != '$' && index < message.size())
+	{
+		index++;
+	}
+	index++;
+	//go past TimeCode|
+	while(message[index] != '|' && index < message.size())
+	{
+		index++;
+	}
+	index++;
+	//go past MESSAGE|
+	while(message[index] != '|' && index < message.size())
+	{
+		index++;
+	}
+	index++;
+	//go past username
+	while(message[index] != '|' && index < message.size())
+	{
+		index++;
+	}
+	index++;
+	//go past message
+	while(message[index] != '|' && index < message.size())
+	{
+		index++;
+	}
+	index++;
+	//get message size
+	string message_size = "";
+	while(message[index] != '*' && index < message.size())
+	{
+		message_size += message[index];
+		index++;
+	}
+	
+	return message_size;
 }
