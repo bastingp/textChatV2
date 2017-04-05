@@ -52,5 +52,5 @@ time_t User::GetLastUpdateTime() const
 
 void User::SetLastUpdateTime(time_t newUpdateTime)
 {
-	lastUpdateTime = newUpdateTime;
+	lastUpdateTime = newUpdateTime; 
 }
