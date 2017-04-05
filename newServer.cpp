@@ -60,7 +60,7 @@ void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);			//sends
 void SendMessageThroughPipes(string message, Fifo& sendfifo);					//sends single message through fifo pipes
 vector<string> GetUpdateMessages(IncomingData data);						//returns vector of messages user hasn't received yet, 
 																			//or "$UPTODATE*" if they already have all the messages
-void CheckForInactiveUsers(vector<User> users, IncomingData data); 
+void CheckForInactiveUsers(vector<User>& users, IncomingData data); 
 
 int main()
 {	
@@ -345,7 +345,7 @@ vector<string> GetUpdateMessages(IncomingData data)
 	return updateMessages;
 }
 
-void CheckForInactiveUsers(vector<User> users, IncomingData data){
+void CheckForInactiveUsers(vector<User>& users, IncomingData data){
 time_t currentTime = time(NULL);
 	time_t lastUpdateTime;
     for (int i = 0; i< users.size(); i++){
@@ -360,7 +360,7 @@ time_t currentTime = time(NULL);
        
       	if ((currentTime - lastUpdateTime) >= MAX_WAIT)
 	{
-            UnassignUser(users[i]);
+          users.erase(users.begin()+i);
     	}
 
     }
