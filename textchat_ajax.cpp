@@ -59,7 +59,7 @@ int main()
 	recfifo.openread();
 	string reply = "";
 	string temp = recfifo.recv();
-	while(temp.find("$END") > 0)
+	while(temp.find("$END") > 0)//searches for the $END message and combines the messages
 	{
 		reply += "|" + temp;
 		if(temp.find("$UPTODATE") != string::npos)
@@ -73,12 +73,12 @@ int main()
 	cout << reply;
 	
 	recfifo.fifoclose();
-	sendfifo.fifoclose();
+	sendfifo.fifoclose(); //closes fifos
 	
 	return 0;
 }
 
-string get_command(string message)
+string get_command(string message)//parser
 {	
 	int index = 0;
 	string command = "";
