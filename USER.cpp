@@ -22,7 +22,7 @@ User::User(string t, string c, string n)
 	lastUpdateTime = 0;
 }
 
-User::User(string t , string c, string n, unsigned long int ut)
+User::User(string t , string c, string n, time_t ut)
 {
 	timeCode = t; 
     color = c;
@@ -45,7 +45,7 @@ string User::GetColor() const
     return (color);
 }
 
-unsigned long int User::GetLastUpdateTime() const
+time_t User::GetLastUpdateTime() const
 {
 	return (lastUpdateTime);
 }
