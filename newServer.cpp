@@ -348,19 +348,17 @@ vector<string> GetUpdateMessages(IncomingData data)
 void CheckForInactiveUsers(vector<User>& users, IncomingData data)
 {
 	time_t currentTime = time(NULL);
-	time_t lastUpdateTime;
 	
     for (int i = 0; i< users.size(); i++)
 	{
-	    lastUpdateTime = users[i].GetLastUpdateTime();
-	    string usersTimeCode = users[i].GetTime();
-	    
-	    if (usersTimeCode == data.timecode)
+		//set lastUpdateTime for user currently updating to the currentTime
+	    if (users[i].GetTime() == data.timecode)
 		{
 			users[i].SetLastUpdateTime(currentTime); 
     	}
        
-      	if ((currentTime - lastUpdateTime) >= MAX_WAIT)
+	    //if a user hasn't updated in MAX_WAIT amount of time, boot them off (they're gone)
+      	if ((currentTime - users[i].GetLastUpdateTime()) >= MAX_WAIT)
 		{
             users.erase(users.begin()+i);
     	}
