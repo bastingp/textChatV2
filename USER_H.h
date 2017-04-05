@@ -30,7 +30,7 @@ public:
 	//get lastUpdateTime
 	time_t GetLastUpdateTime() const; 
 
-	void SetLastUpdateTime(unsigned long int newUpdateTime);
+	void SetLastUpdateTime(time_t newUpdateTime);
 
 private: 
 
