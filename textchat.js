@@ -20,7 +20,10 @@ function pageInit()
 	}
 	
 	//send load message to CGI
-	callCGI("$" + timeCode + "|LOAD|*");
+	if(!cgiBusy)
+	{
+		callCGI("$" + timeCode + "|LOAD|*");
+	}
 }
 
 function callCGI(CGIMessage)
@@ -49,8 +52,9 @@ function sendMessage()
 
 function checkServerForUpdates()
 {
-	callCGI("")
+	if(!cgiBusy)
+	{
+		callCGI("$" + timeCode + "|UPDATE|" + username + "|" + numMessages + "*");
+	}
 }
-
-
-
+setInterval(function(){ checkServerForUpdates()}, 1000);

@@ -28,16 +28,16 @@ public:
 	string GetUsername() const; 
 	
 	//get lastUpdateTime
-	unsigned long int GetLastUpdateTime() const; 
+	time_t GetLastUpdateTime() const; 
 
-	void SetLastUpdateTime(unsigned long int newUpdateTime);
+	void SetLastUpdateTime(time_t newUpdateTime);
 
 private: 
 
 	string timeCode;
 	string color;
 	string username; 
-	unsigned long int lastUpdateTime;
+	time_t lastUpdateTime;
 
 };
 
