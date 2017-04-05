@@ -29,6 +29,7 @@ public:
 time_t GetLastUpdateTime() const; 
 
 	void SetLastUpdateTime(time_t lastUpdateTime);
+	//sets update time
 
 private: 
 
