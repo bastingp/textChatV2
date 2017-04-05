@@ -19,7 +19,7 @@ all: textserver testclient textchat_ajax PutCGI PutHTML
 testclient.o: testclient.cpp fifo.h
 	$(CC) -c $(CFLAGS) testclient.cpp
 
-textserver.o: textserver.cpp fifo.h
+textserver.o: textserver.cpp fifo.h USER_H.h
 	$(CC) -c $(CFLAGS) textserver.cpp
 
 textchat_ajax.o: textchat_ajax.cpp fifo.h
@@ -28,8 +28,11 @@ textchat_ajax.o: textchat_ajax.cpp fifo.h
 testclient: testclient.o fifo.o
 	$(CC) testclient.o  fifo.o -o testclient
 	
-textserver: textserver.o fifo.o
-	$(CC) textserver.o  fifo.o -o textserver
+textserver: textserver.o fifo.o USER.o
+	$(CC) textserver.o  fifo.o USER.o -o textserver
+
+USER.o: USER.cpp USER_H.h
+	$(CC) -c $(CFLAGS) USER.cpp
 
 fifo.o:		fifo.cpp fifo.h
 		g++ -c fifo.cpp
