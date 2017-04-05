@@ -85,13 +85,13 @@ int main()
 				if(activeUsers.size() < MAX_USERS)
 				{
 					AssignUser(incomingData);
-					string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername() + "*";
+					string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername();
 					SendMessageThroughPipes(loadMessage, sendfifo);
 				}
 				//otherwise, let them know the server is already full
 				else
 				{
-					string chatRoomFullMessage = "$USER|FULL*";
+					string chatRoomFullMessage = "$USER|FULL";
 					SendMessageThroughPipes(chatRoomFullMessage, sendfifo);
 				}
 				
@@ -116,14 +116,14 @@ int main()
 			{
 				//command not recognized--handle this
 				cout << "\n\n******Command not recognized******\n\n";
-				SendMessageThroughPipes("$CORRUPT*", sendfifo);
+				SendMessageThroughPipes("$CORRUPT", sendfifo);
 			}
 		}
 		else
 		{
 			//handle corrupt data
 			cout << "\n\n******Data is corrupt******\n\n";
-			SendMessageThroughPipes("$CORRUPT*", sendfifo);
+			SendMessageThroughPipes("$CORRUPT", sendfifo);
 		}
 		
 		//Close fifo
@@ -318,7 +318,7 @@ vector<string> GetUpdateMessages(IncomingData data)
 	
 	if(data.userMessageSize == numMessages.str())
 	{
-		updateMessages.push_back("$UPTODATE*");
+		updateMessages.push_back("$UPTODATE");
 	}
 	else if(data.userMessageSize < numMessages.str())
 	{
@@ -332,7 +332,7 @@ vector<string> GetUpdateMessages(IncomingData data)
 	{
 		//this should never happen
 		cout << "\n\n*****ERROR: User has more messages than server*****\n\n";
-		updateMessages.push_back("$UPTODATE*");
+		updateMessages.push_back("$UPTODATE");
 	}
 	
 	return updateMessages;
