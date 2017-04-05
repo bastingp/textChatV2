@@ -1,42 +1,42 @@
-#ifndef USERID_H
-#define USERID_H
+#ifndef USER_H
+#define USER_H
+
+#include <string>
 
 using namespace std; 
 
-class userID {
+class User 
+{
 
 public: 
 
-//Constructor
-userID(); 
-userID(userTime, userColor, userName); 
+	//Constructor
+	User(); 
+	User(string t , string c, string n); 
+	User(string t , string c, string n, time_t ut);
 
- //Get the userTime
-unsigned int getUserTime() const;
- 
- //set userTime
+	//Get the userTime
+	string GetTime() const;
+	 
 
-void setTime(int timeOfLoad); 
+	//Get userColor
+	string GetColor() const; 
 
- //Get userColor
-string getUserColor() const; 
-//set userColor
- void setUserColor(string color);
- 
- //Get userName
- string getUserName() const; 
+	//Get userName
+	string GetUsername() const; 
+	
+	//get lastUpdateTime
+time_t GetLastUpdateTime() const; 
 
- //set username
- 
- void setUserName(string username);
+	void SetLastUpdateTime(time_t lastUpdateTime);
 
+private: 
 
- private: 
- 
- userTime = timeOfLoad
- userColor = color;
- userName = username; 
- 
- };
- 
- #endif /* USERID_H */
+	string timeCode;
+	string color;
+	string username; 
+	time_t lastUpdateTime;
+
+};
+
+#endif /* USERID_H */
