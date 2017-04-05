@@ -48,7 +48,7 @@ const int MAX_USERS = 5;
 vector<User> activeUsers;			//all users signed into the server
 vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPtolemy", "StrangerHelga", "StrangerAlex", 
 									"StrangerThings", "StrangerLudwig", "StrangerToadstool", "StrangerJedediah", "StrangerYevgeni"};
-vector<string> storedMessages;
+vector<string> storedMessages;//vector of all messages in the session
 
 
 IncomingData GetMessageAsIncomingData(string message);		//parses message, stores its data into an IncomingData struct, and returns the data
@@ -82,7 +82,7 @@ int main()
 		
 		incomingData = GetMessageAsIncomingData(inMessage);
 		
-		if(DataIsCorrupt(incomingData) == false)
+		if(DataIsCorrupt(incomingData) == false)//checks to see if the data is corrupt
 		{
 			cout << "Got command: " << incomingData.command << endl << endl;
 			if((incomingData.command == "LOAD" || IsNewUser(incomingData)) && incomingData.command != "UNLOAD")
@@ -104,9 +104,9 @@ int main()
 			}
 			else if(incomingData.command == "UNLOAD")
 			{
-				UnassignUser(incomingData);
+				UnassignUser(incomingData);//unassigns them if they are leaving the page
 			}
-			else if(incomingData.command == "UPDATE")
+			else if(incomingData.command == "UPDATE")//condition for updating 
 			{
 				vector<string> updateMessages = GetUpdateMessages(incomingData);
 				SendMessageThroughPipes(updateMessages, sendfifo);
@@ -142,7 +142,7 @@ int main()
 	return 0;
 }
 
-void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo)
+void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo)//sends message to the CGI
 {
 	sendfifo.openwrite();
 	cout << "Sending: ";
@@ -155,7 +155,7 @@ void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo)
 	sendfifo.fifoclose();
 }
 
-void SendMessageThroughPipes(string message, Fifo& sendfifo)
+void SendMessageThroughPipes(string message, Fifo& sendfifo)//sends single message to CGI
 {
 	sendfifo.openwrite();
 	
@@ -168,7 +168,7 @@ void SendMessageThroughPipes(string message, Fifo& sendfifo)
 }
 
 
-IncomingData GetMessageAsIncomingData(string message)
+IncomingData GetMessageAsIncomingData(string message) //gets the struct set up 
 {
 	const string messageRequest = "MESSAGE";
 	const string updateRequest = "UPDATE";
@@ -256,7 +256,7 @@ IncomingData GetMessageAsIncomingData(string message)
 	return incomingData;
 }
 
-void AssignUser(IncomingData data)
+void AssignUser(IncomingData data)//makes a new instance of USER in the vector
 {
 	if(activeUsers.size() < MAX_USERS)
 	{
@@ -272,7 +272,7 @@ void AssignUser(IncomingData data)
 	}
 }
 
-string GetFirstAvailableUsername()
+string GetFirstAvailableUsername()//randomly picks a username
 {
 	string username;
 	//find first username not yet taken by an active user
@@ -299,13 +299,14 @@ string GetFirstAvailableUsername()
 	return username;
 }
 
-bool DataIsCorrupt(IncomingData data)
+bool DataIsCorrupt(IncomingData data)//checks to see if the data is corrupt
 {
 	const string corruptMessage = "CORRUPT";
+		//if the messages aren't what you would expect
 	return(data.timecode == corruptMessage || data.command == corruptMessage || data.userMessageSize == corruptMessage);
 }
 
-void UnassignUser(IncomingData incomingData)
+void UnassignUser(IncomingData incomingData) //erases a Unassigning or Inactive user from the vector
 {
 	for(int i = 0; i < activeUsers.size(); i++)
 	{
@@ -317,23 +318,24 @@ void UnassignUser(IncomingData incomingData)
 	}
 }
 
-vector<string> GetUpdateMessages(IncomingData data)
+vector<string> GetUpdateMessages(IncomingData data) //reads messages in 
 {
 	vector<string> updateMessages;
 	stringstream numMessages;
-	numMessages << storedMessages.size();
+	numMessages << storedMessages.size();//pulls message into a stream 
 	
-	if(data.userMessageSize == numMessages.str())
+	if(data.userMessageSize == numMessages.str())//if there are no new messages, send uptodate
 	{
 		updateMessages.push_back("$UPTODATE*");
 	}
-	else if(data.userMessageSize < numMessages.str())
+	else if(data.userMessageSize < numMessages.str())//if there are push back the stored messages that the user doesn't have
 	{
 		updateMessages.push_back("$UPDATE");
 		for(int i = atoi(data.userMessageSize.c_str()); i < storedMessages.size(); i++)
 		{
 			updateMessages.push_back(storedMessages[i]);
 		}
+		//should we add in the star?
 	}
 	else
 	{
@@ -372,7 +374,7 @@ void CheckForInactiveUsers(vector<User>& users, IncomingData data)
 	return; 
 }
 
-bool IsNewUser(IncomingData data)
+bool IsNewUser(IncomingData data) //checks to see if the user's id is the same as a previous user
 {
 	for(int i = 0; i < activeUsers.size(); i++)
 	{
