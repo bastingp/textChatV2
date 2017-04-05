@@ -39,7 +39,7 @@ struct IncomingData
 string receive_fifo = "chatRequest";
 string send_fifo = "chatReply";
 
-const int MAX_USERS = 2;
+const int MAX_USERS = 5;
 vector<User> activeUsers;			//all users signed into the server
 vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPtolemy", "StrangerHelga", "StrangerAlex", 
 									"StrangerThings", "StrangerLudwig", "StrangerToadstool", "StrangerJedediah", "StrangerYevgeni"};
