@@ -41,12 +41,12 @@ int main()
 	
 	string message = **user_input;
 	
-	//Tell javascript how to read output
-	cout << "Content-Type: text/plain\n\n";
-	
 	//Send message to server
 	sendfifo.openwrite();
 	sendfifo.send(message);
+	
+	//Tell javascript how to read output
+	cout << "Content-Type: text/plain\n\n";
 	
 	//if page is unloading, no reason to wait for response from server
 	if(get_command(message) == unload_command)
@@ -59,7 +59,7 @@ int main()
 	recfifo.openread();
 	string reply = "";
 	string temp = recfifo.recv();
-	while(temp.find("$END") == string::npos)
+	while(temp.find("$END") > 0)
 	{
 		reply += "|" + temp;
 		if(temp.find("$UPTODATE") != string::npos)
@@ -69,10 +69,10 @@ int main()
 		temp = recfifo.recv();
 	}
 	
-	recfifo.fifoclose();
 	reply += "*";
 	cout << reply;
 	
+	recfifo.fifoclose();
 	sendfifo.fifoclose();
 	
 	return 0;
