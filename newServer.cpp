@@ -93,6 +93,8 @@ int main()
 					AssignUser(incomingData);
 					string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername() + "*";
 					SendMessageThroughPipes(loadMessage, sendfifo);
+					//set their last update time to the current time
+					activeUsers[activeUsers.size() - 1].SetLastUpdateTime(time(NULL));
 				}
 				//otherwise, let them know the server is already full
 				else
@@ -338,7 +340,9 @@ vector<string> GetUpdateMessages(IncomingData data)
 	else
 	{
 		//this should never happen
-		cout << "\n\n*****ERROR: User has more messages than server*****\n\n";
+		cout << "\n\n*****ERROR: User has more messages than server*****\n\n"
+			 << "Server has: " << to_string(updateMessages.size()) << endl 
+			 << "User has: " << data.userMessageSize << endl << endl;
 		updateMessages.push_back("$UPTODATE*");
 	}
 	
