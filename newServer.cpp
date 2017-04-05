@@ -93,8 +93,6 @@ int main()
 					AssignUser(incomingData);
 					string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername() + "*";
 					SendMessageThroughPipes(loadMessage, sendfifo);
-					//set their last update time to the current time
-					activeUsers[activeUsers.size() - 1].SetLastUpdateTime(time(NULL));
 				}
 				//otherwise, let them know the server is already full
 				else
@@ -265,7 +263,7 @@ void AssignUser(IncomingData data)
 		string username = GetFirstAvailableUsername();
 
 		//create new user with the data from client, and store them in activeUsers
-		User newUser(data.timecode, "#000000", username);
+		User newUser(data.timecode, "#000000", username, time(NULL));
 		activeUsers.push_back(newUser);
 	}
 	else
@@ -364,7 +362,8 @@ void CheckForInactiveUsers(vector<User>& users, IncomingData data)
 	    //if a user hasn't updated in MAX_WAIT amount of time, boot them off (they're gone)
       	if ((currentTime - users[i].GetLastUpdateTime()) >= MAX_WAIT)
 		{
-			cout << "\n\n****Booting off " << users[i].GetUsername() << "*******\n\n";
+			cout << "\n\n****Booting off " << users[i].GetUsername() << " whose time is " << users[i].GetLastUpdateTime() << "*******\n\n"
+				 << "when current time is: " << currentTime << endl << endl;
             users.erase(users.begin()+i);
     	}
 

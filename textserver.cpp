@@ -91,7 +91,7 @@ int main()
 				if(activeUsers.size() < MAX_USERS)
 				{
 					AssignUser(incomingData);
-					string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername() + "*";
+					string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername();
 					SendMessageThroughPipes(loadMessage, sendfifo);
 				}
 				//otherwise, let them know the server is already full
@@ -263,7 +263,7 @@ void AssignUser(IncomingData data)
 		string username = GetFirstAvailableUsername();
 
 		//create new user with the data from client, and store them in activeUsers
-		User newUser(data.timecode, "#000000", username);
+		User newUser(data.timecode, "#000000", username, time(NULL));
 		activeUsers.push_back(newUser);
 	}
 	else
@@ -325,7 +325,7 @@ vector<string> GetUpdateMessages(IncomingData data)
 	
 	if(data.userMessageSize == numMessages.str())
 	{
-		updateMessages.push_back("$UPTODATE*");
+		updateMessages.push_back("$UPTODATE");
 	}
 	else if(data.userMessageSize < numMessages.str())
 	{
@@ -339,7 +339,7 @@ vector<string> GetUpdateMessages(IncomingData data)
 	{
 		//this should never happen
 		cout << "\n\n*****ERROR: User has more messages than server*****\n\n";
-		updateMessages.push_back("$UPTODATE*");
+		updateMessages.push_back("$UPTODATE");
 	}
 	
 	return updateMessages;
