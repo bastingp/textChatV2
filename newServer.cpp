@@ -345,24 +345,27 @@ vector<string> GetUpdateMessages(IncomingData data)
 	return updateMessages;
 }
 
-void CheckForInactiveUsers(vector<User>& users, IncomingData data){
-time_t currentTime = time(NULL);
+void CheckForInactiveUsers(vector<User>& users, IncomingData data)
+{
+	time_t currentTime = time(NULL);
 	time_t lastUpdateTime;
-    for (int i = 0; i< users.size(); i++){
-	    
-	  lastUpdateTime = users[i].GetLastUpdateTime();
-	   string usersTimeCode = users[i].GetTime();
+	
+    for (int i = 0; i< users.size(); i++)
+	{
+	    lastUpdateTime = users[i].GetLastUpdateTime();
+	    string usersTimeCode = users[i].GetTime();
 	    
 	    if (usersTimeCode == data.timecode)
-	{
-		users[i].SetLastUpdateTime(currentTime); 
+		{
+			users[i].SetLastUpdateTime(currentTime); 
     	}
        
       	if ((currentTime - lastUpdateTime) >= MAX_WAIT)
-	{
-          users.erase(users.begin()+i);
+		{
+            users.erase(users.begin()+i);
     	}
 
     }
-        return; 
+        
+	return; 
 }
