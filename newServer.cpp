@@ -39,6 +39,8 @@ struct IncomingData
 string receive_fifo = "chatRequest";
 string send_fifo = "chatReply";
 
+const int MAX_WAIT = 10;	//amount of time that the server will allow a user to be absent before 
+									//they're signed out 
 const int MAX_USERS = 5;
 vector<User> activeUsers;			//all users signed into the server
 vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPtolemy", "StrangerHelga", "StrangerAlex", 
@@ -55,7 +57,7 @@ void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);			//sends
 void SendMessageThroughPipes(string message, Fifo& sendfifo);					//sends single message through fifo pipes
 vector<string> GetUpdateMessages(IncomingData data);						//returns vector of messages user hasn't received yet, 
 																			//or "$UPTODATE*" if they already have all the messages
-
+void CheckForInactiveUsers(vector<User> users); 
 
 int main()
 {	
@@ -126,6 +128,8 @@ int main()
 			SendMessageThroughPipes("$CORRUPT", sendfifo);
 		}
 		
+		CheckForInactiveUsers(activeUsers);
+				
 		//Close fifo
 		recfifo.fifoclose();	
 	}
@@ -336,4 +340,20 @@ vector<string> GetUpdateMessages(IncomingData data)
 	}
 	
 	return updateMessages;
+}
+
+void CheckForInactiveUsers(vector<User> users){
+time_t currentTime = time(NULL);
+    for (int i = 0; i< users.size(); i++){
+        
+        if (newTime - users.lastUpdateTime[i] >= MAX_WAIT)
+        {
+            unassign(users[i]);
+        }
+        else 
+        {
+        	users.lastUpdateTime[i]=currentTime;
+        }
+        }
+        return; 
 }
