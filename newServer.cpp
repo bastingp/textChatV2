@@ -353,14 +353,14 @@ time_t currentTime = time(NULL);
 	  lastUpdateTime = users[i].GetLastUpdateTime();
 	   string usersTimeCode = users[i].GetTime();
 	    
-	    if (userstimeCode = data.timecode)
+	    if (usersTimeCode = data.timecode)
 	{
 		users[i].SetLastUpdateTime(currentTime); 
     	}
        
       	if ((currentTime - lastUpdateTime) >= MAX_WAIT)
 	{
-            unassign(users[i]);
+            Unassign(users[i]);
     	}
 
     }
