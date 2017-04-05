@@ -1,3 +1,4 @@
+//Server created on April 2
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -9,395 +10,374 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <sstream>
 #include "fifo.h"
+#include "USER_H.h"
 
 using namespace std;
 
-/* Fifo names */
+//used to store data from cgi
+struct IncomingData
+{
+	string timecode = "";
+	string command = "";
+	string username = "";
+	string message = "";
+	string userMessageSize = "";
+	string lastUpdateTime = "";
+	
+	//resets all variables to empty strings
+	void Reset()
+	{
+		timecode = "";
+		command = "";
+		username = "";
+		message = "";
+		userMessageSize = "";
+		lastUpdateTime =""; 
+		
+	}
+};
+
 string receive_fifo = "chatRequest";
 string send_fifo = "chatReply";
 
-const string user_assignment1 = "user1";
-const string user_assignment2 = "user2";
-const int MAX_UPDATE_DIFFERENCE = 15;
-string user1TimeCode = "NULL";
-string user2TimeCode = "NULL";
-/*
- * 
- */
- string get_time_code(string message, int& index);
- string get_command(string message, int& index);
- bool is_valid_user(string incoming_time_code);
- void store_message(string message, int starting_index, vector<string>& user1messages, vector<string>& user2messages, Fifo& sendfifo);
- void output_messages_through_pipes(vector<string> messages, Fifo& sendfifo);
- void handle_update(string message, int starting_index, vector<string> user1, vector<string> user2, int& user1Updates, int& user2Updates, Fifo& sendfifo);
- void check_timeout(bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates);
- vector<string> get_new_messages(int starting_index, vector<string> stored_messages);
- void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates, string incoming_time_code);
- void unassign_user(string message, int starting_index, bool& user1connected, bool& user2connected, vector<string>& user1messages, vector<string>& user2messages);
- void return_status(Fifo& sendfifo, bool user1connected, bool user2connected);
- 
-int main() 
-{
-	bool user1connected = false;
-	bool user2connected = false;
-	vector<string> user1messages;
-	vector<string> user2messages;
-	const string message_command = "MESSAGE";
-	const string update_command = "UPDATE";
-	const string load_command = "LOAD";
-	const string unload_command = "UNLOAD";
-	const string status_command = "STATUS";
+const int MAX_WAIT = 10;	//amount of time that the server will allow a user to be absent before 
+									//they're signed out 
+const int MAX_USERS = 5;
+vector<User> activeUsers;			//all users signed into the server
+vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPtolemy", "StrangerHelga", "StrangerAlex", 
+									"StrangerThings", "StrangerLudwig", "StrangerToadstool", "StrangerJedediah", "StrangerYevgeni"};
+vector<string> storedMessages;
+
+
+IncomingData GetMessageAsIncomingData(string message);		//parses message, stores its data into an IncomingData struct, and returns the data
+void AssignUser(IncomingData data);					//adds user to activeUsers
+string GetFirstAvailableUsername();					//returns first available username from availableUsernames
+bool DataIsCorrupt(IncomingData data);				//returns true if any of the data in 'data' is corrupt
+void UnassignUser(IncomingData incomingData);			//removes user with matching data in 'data' from activeUsers
+void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);			//sends messages through fifo pipes
+void SendMessageThroughPipes(string message, Fifo& sendfifo);					//sends single message through fifo pipes
+vector<string> GetUpdateMessages(IncomingData data);						//returns vector of messages user hasn't received yet, 
+																			//or "$UPTODATE*" if they already have all the messages
+void CheckForInactiveUsers(vector<User>& users, IncomingData data); 	//boots off any users who haven't updated within MAX_WAIT time
+bool IsNewUser(IncomingData data);
+
+int main()
+{	
+	IncomingData incomingData;
 	
-	string inMessage;
-
-
-	int user1Updates = 0;
-	int user2Updates = 0;
-
 	// create the FIFOs for communication
 	Fifo recfifo(receive_fifo);
 	Fifo sendfifo(send_fifo);
-
-	while (1) 
+	
+	while(1)
 	{
-		/* Get a message from a client */
-		recfifo.openread();
-		inMessage = recfifo.recv();
+		cout << "Current number of users: " << to_string(activeUsers.size()) << endl << endl;
+		//Open fifo, get message from client
+		recfifo.openread(); 
+		string inMessage = recfifo.recv(); 
 		
-		cout << "Got message: " << inMessage << endl;
+		cout << "Got message: " << inMessage << endl; //test condition 
 		
-		int i = 0;
-		string incoming_time_code = get_time_code(inMessage, i);
+		incomingData = GetMessageAsIncomingData(inMessage);
 		
-		if (!is_valid_user(incoming_time_code))  //checks if user time code is valid
+		if(DataIsCorrupt(incomingData) == false)
 		{
-			cout << "\nNot a valid user\n";
-			assign_user(sendfifo, user1connected, user2connected, user1Updates, user2Updates, incoming_time_code);
+			cout << "Got command: " << incomingData.command << endl << endl;
+			if((incomingData.command == "LOAD" || IsNewUser(incomingData)) && incomingData.command != "UNLOAD")
+			{
+				//if there's room on the server, add them to the chat room
+				if(activeUsers.size() < MAX_USERS)
+				{
+					AssignUser(incomingData);
+					string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername() + "*";
+					SendMessageThroughPipes(loadMessage, sendfifo);
+				}
+				//otherwise, let them know the server is already full
+				else
+				{
+					string chatRoomFullMessage = "$USER|FULL";
+					SendMessageThroughPipes(chatRoomFullMessage, sendfifo);
+				}
+				
+			}
+			else if(incomingData.command == "UNLOAD")
+			{
+				UnassignUser(incomingData);
+			}
+			else if(incomingData.command == "UPDATE")
+			{
+				vector<string> updateMessages = GetUpdateMessages(incomingData);
+				SendMessageThroughPipes(updateMessages, sendfifo);
+				CheckForInactiveUsers(activeUsers, incomingData);
+			}
+			else if(incomingData.command == "MESSAGE")
+			{
+				string messageFromUser = incomingData.username + "|" + incomingData.message;
+				storedMessages.push_back(messageFromUser);
+				vector<string> updateMessages = GetUpdateMessages(incomingData);
+				SendMessageThroughPipes(updateMessages, sendfifo);
+			}
+			else
+			{
+				//command not recognized--handle this
+				cout << "\n\n******Command not recognized******\n\n";
+				SendMessageThroughPipes("$CORRUPT", sendfifo);
+			}
 		}
 		else
 		{
-			cout << "\nIs a valid user\n";
-			string command = get_command(inMessage, i);
-			cout << "Got command: " << command << endl << endl;
-
-			if(command == message_command)
-			{
-				store_message(inMessage, i, user1messages, user2messages, sendfifo);
-			}
-			else if(command == update_command)
-			{
-				handle_update(inMessage, i, user1messages, user2messages, user1Updates, user2Updates, sendfifo);
-				check_timeout(user1connected, user2connected, user1Updates, user2Updates);
-			}
-			else if(command == load_command)
-			{
-				assign_user(sendfifo, user1connected, user2connected, user1Updates, user2Updates, incoming_time_code);
-			}
-			else if(command == unload_command)
-			{
-				unassign_user(inMessage, i, user1connected, user2connected, user1messages, user2messages);
-			}
-			else if(command == status_command)
-			{
-				return_status(sendfifo, user1connected, user2connected);
-			}
+			//handle corrupt data
+			cout << "\n\n******Data is corrupt******\n\n";
+			SendMessageThroughPipes("$CORRUPT", sendfifo);
 		}
-		
+				
+		//Close fifo
 		recfifo.fifoclose();
 	}
-
+	
+	cout << "\n\n****out of while loop****";
+	
 	return 0;
 }
 
-string get_time_code(string message, int& index)
+void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo)
 {
-	index = 0;
-	string command = "";
-	
-	//go past $
-	while(index < message.size())
-	{
-		if(message[index] == '$')
-		{
-			break;
-		}
-		index++;
-	}
-	index++;
-	//go past TIMECODE|
-	while(index < message.size())
-	{
-		if(message[index] == '|')
-		{
-			break;
-		}
-		command += message[index];
-		index++;
-	}
-	index++;
-	
-	return command;
-}
-
-string get_command(string message, int& index)
-{	
-	string command = "";
-	//go past MESSAGE|
-	while(index < message.size())
-	{
-		if(message[index] == '|')
-		{
-			break;
-		}
-		command += message[index];
-		index++;
-	}
-	index++;
-	
-	return command;
-}
-
-bool is_valid_user(string incoming_time_code)
-{
-	bool user_unassigned = (user1TimeCode == "NULL" || user2TimeCode == "NULL");
-	return (incoming_time_code == user1TimeCode || incoming_time_code == user2TimeCode || user_unassigned);
-}
-
-void store_message(string message, int starting_index, vector<string>& user1messages, vector<string>& user2messages, Fifo& sendfifo)
-{
-	int i = starting_index;
-	string username = "";
-	
-	//get username
-	while(i < message.size())
-	{
-		if(message[i] == '|')
-		{
-			break;
-		}
-		username += message[i];
-		i++;
-	}
-	i++;
-	
-	//get the message
-	string str = "";
-	while(i < message.size())
-	{
-		if(message[i] == '*')
-		{
-			break;
-		}
-		str += message[i];
-		i++;
-	}
-	
-	if(username == user_assignment1)
-	{
-		user1messages.push_back(str);
-	}
-	else
-	{
-		user2messages.push_back(str);
-	}
-
-	vector<string> end_message;
-	end_message.push_back("$END");
-	output_messages_through_pipes(end_message, sendfifo);
-}
-
-void handle_update(string message, int starting_index, vector<string> user1, vector<string> user2, int& user1Updates, int& user2Updates, Fifo& sendfifo)
-{
-	int i = starting_index;
-	string username = "";
-	//get username
-	while(i < message.size())
-	{
-		if(message[i] == '|')
-		{
-			break;
-		}
-		username += message[i];
-		i++;
-	}
-	i++;
-	
-	string size_as_str = "";
-	while(i < message.size())
-	{
-		if(message[i] == '*')
-		{
-			break;
-		}
-		size_as_str += message[i];
-		i++;
-	}
-	
-	//check size of client's messages
-	int size = atoi(size_as_str.c_str());
-	vector<string> reply;
-	if(username == user_assignment1)
-	{
-		user1Updates++;
-		//return other user's data
-		if(size < user2.size())
-		{
-			reply = get_new_messages(size, user2);
-			reply.push_back("$END");
-		}
-		else
-		{
-			reply.push_back("$UPTODATE*");
-		}
-	}
-	else if(username == user_assignment2)
-	{
-		user2Updates++;
-		//return other user's data
-		if(size < user1.size())
-		{
-			reply = get_new_messages(size, user1);
-			reply.push_back("$END");
-		}
-		else
-		{
-			reply.push_back("$UPTODATE*");
-		}
-	}	
-	output_messages_through_pipes(reply, sendfifo);
-}
-
-void check_timeout(bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates)
- {
- 	if (user1connected && user2connected)
-	{
-	 	if ((user1Updates - user2Updates) > MAX_UPDATE_DIFFERENCE)
- 		{
- 			user2connected = false;
- 			cout << "user2 disconnected"<< endl;
- 			user1Updates = 0;
- 			user2Updates = 0;
- 		}
- 		if ((user2Updates - user1Updates) > MAX_UPDATE_DIFFERENCE)
- 		{
- 			user1connected = false;
- 			cout << "user1 disconnected" << endl;
- 			user1Updates = 0;
- 			user2Updates = 0;
- 		}
- 	}
- }
-
-
-vector<string> get_new_messages(int starting_index, vector<string> stored_messages)
-{
-	vector<string> new_messages;
-	const string update_message = "$UPDATE";
-	
-	new_messages.push_back(update_message);
-	for(int i = starting_index; i < stored_messages.size(); i++)
-	{
-		new_messages.push_back(stored_messages[i]);
-	}
-	
-	return new_messages;
-}
-
-void output_messages_through_pipes(vector<string> messages, Fifo& sendfifo)
-{
-	cout << "\n\n***Outputting messages****\n\n";
 	sendfifo.openwrite();
-	cout << "Opened pipes\n\n";
+	cout << "Sending: ";
 	for(int i = 0; i < messages.size(); i++)
 	{
 		cout << messages[i] << endl;
 		sendfifo.send(messages[i]);
 	}
+	sendfifo.send("$END");
 	sendfifo.fifoclose();
 }
 
-void assign_user(Fifo& sendfifo, bool& user1connected, bool& user2connected, int& user1Updates, int& user2Updates, string incoming_time_code)
+void SendMessageThroughPipes(string message, Fifo& sendfifo)
 {
-	//use a vector because output_messages_through_pipes uses a vector parameter
+	sendfifo.openwrite();
 	
-	vector<string> message;
-	string username = "$USER|";
-	if(!user1connected)
-	{
-		cout << "\nUser1 not connected\n";
-		username += "user1";
-		user1connected = true;
-		user2Updates = 0;
-		user1TimeCode = incoming_time_code;
+	cout << "Sending: " << message << endl;
+	sendfifo.send(message);
+	
+	sendfifo.send("$END");
 
-	}
-	else if(!user2connected)
-	{
-		cout << "\nUser2 not connected\n";
-		username += "user2";
-		user2connected = true;
-		user1Updates = 0;
-		user2TimeCode = incoming_time_code;
-	}
-	else
-	{
-		cout << "\nChat room full\n";
-		username += "FULL";
-	}
-	username += "*";
-	message.push_back(username);
-	message.push_back("$END"); //
-
-	output_messages_through_pipes(message, sendfifo);
+	sendfifo.fifoclose();
 }
 
-void unassign_user(string message, int starting_index, bool& user1connected, bool& user2connected, vector<string>& user1messages, vector<string>& user2messages)
+
+IncomingData GetMessageAsIncomingData(string message)
 {
-	cout << "\n**************unassigning user*************\n";
+	const string messageRequest = "MESSAGE";
+	const string updateRequest = "UPDATE";
+	const string corruptMessage = "CORRUPT";
 	
-	int i = starting_index;
-	string username = "";
-	//get username
-	while(i < message.size())
+	//index; 
+	int i = 0;
+	//local incomingData
+	IncomingData incomingData;
+	
+	for(int j = 0; j < 6 && i < message.size() && message[i] != '*'; j++)
 	{
-		if(message[i] == '*')
+		while (i < message.size() && message[i] != '$' && message[i] != '|' && message[i] != '*')
 		{
-			break;
+			//first time through, read past '$'
+			
+			//get timecode
+			if(j == 1)		
+			{
+				//Break if any characters are not numerical
+				if(!isdigit(message[i]))
+				{
+					//if so, message is corrupt
+					incomingData.timecode = corruptMessage;
+					break;
+				}
+				incomingData.timecode += message[i];
+			}
+			
+			//get command
+			else if(j == 2)		
+			{
+				//Break if any characters are not uppercase letters
+				if(!isalpha(message[i]) || islower(message[i]))
+				{
+					incomingData.command = corruptMessage;
+					break;
+				}
+				incomingData.command += message[i];
+			}
+			
+			//get username
+			else if(j == 3)		
+			{
+				incomingData.username += message[i];
+			}
+			
+			//get message or messageSize
+			else if(j == 4)		
+			{
+				//if the data is a message, store it in message
+				if(incomingData.command == messageRequest)
+				{
+					incomingData.message += message[i];
+				}
+				//if the data is messageSize, store it in userMessageSize
+				else if(incomingData.command == updateRequest)	
+				{
+					//If message size is not a number, data is corrupt
+					if(!isdigit(message[i]))
+					{
+						incomingData.userMessageSize = corruptMessage;
+						break;
+					}
+					incomingData.userMessageSize += message[i];
+				}
+			}
+			
+			//if message command, also store client's message size
+			else if(j == 5)
+			{
+				//If message size is not a number, data is corrupt
+				if(!isdigit(message[i]))
+				{
+					incomingData.userMessageSize = corruptMessage;
+					break;
+				}
+				incomingData.userMessageSize += message[i];
+			}
+			i++;
 		}
-		username += message[i];
 		i++;
 	}
-	
-	if(username == user_assignment1)
+
+	return incomingData;
+}
+
+void AssignUser(IncomingData data)
+{
+	if(activeUsers.size() < MAX_USERS)
 	{
-		user1connected = false;
-		user1messages.clear();
-		user1TimeCode = "NULL";
+		string username = GetFirstAvailableUsername();
+
+		//create new user with the data from client, and store them in activeUsers
+		User newUser(data.timecode, "#000000", username);
+		activeUsers.push_back(newUser);
 	}
 	else
 	{
-		user2connected = false;
-		user2messages.clear();
-		user2TimeCode = "NULL";
+		cout << "\nCannot add user because chat room is full\n";
 	}
 }
 
-void return_status(Fifo& sendfifo, bool user1connected, bool user2connected)
+string GetFirstAvailableUsername()
 {
-	string message = "$STATUS|";
-	if(user1connected && user2connected)
+	string username;
+	//find first username not yet taken by an active user
+	for(int i = 0; i < availableUsernames.size(); i++)
 	{
-		message += "FULL";
+		bool usernameTaken = false;
+		for(int j = 0; j < activeUsers.size(); j++)
+		{
+			//check if username is already taken
+			if(activeUsers[j].GetUsername() == availableUsernames[i])
+			{
+				usernameTaken = true;
+				break;
+			}
+		}
+		//if it's not, go ahead and assign username to it, and break out of the loop
+		if(!usernameTaken)
+		{
+			username = availableUsernames[i];
+			break;
+		}
+	}
+	
+	return username;
+}
+
+bool DataIsCorrupt(IncomingData data)
+{
+	const string corruptMessage = "CORRUPT";
+	return(data.timecode == corruptMessage || data.command == corruptMessage || data.userMessageSize == corruptMessage);
+}
+
+void UnassignUser(IncomingData incomingData)
+{
+	for(int i = 0; i < activeUsers.size(); i++)
+	{
+		if(activeUsers[i].GetUsername() == incomingData.username || activeUsers[i].GetTime() == incomingData.timecode)
+		{
+			activeUsers.erase(activeUsers.begin()+i);
+			break;
+		}
+	}
+}
+
+vector<string> GetUpdateMessages(IncomingData data)
+{
+	vector<string> updateMessages;
+	stringstream numMessages;
+	numMessages << storedMessages.size();
+	
+	if(data.userMessageSize == numMessages.str())
+	{
+		updateMessages.push_back("$UPTODATE*");
+	}
+	else if(data.userMessageSize < numMessages.str())
+	{
+		updateMessages.push_back("$UPDATE");
+		for(int i = atoi(data.userMessageSize.c_str()); i < storedMessages.size(); i++)
+		{
+			updateMessages.push_back(storedMessages[i]);
+		}
 	}
 	else
 	{
-		message += "WAIT";
+		//this should never happen
+		cout << "\n\n*****ERROR: User has more messages than server*****\n\n";
+		updateMessages.push_back("$UPTODATE*");
 	}
-	message += "*";
 	
-	//store in vector so output_messages_through_pipes can handle properly
-	vector<string> vstr;
-	vstr.push_back(message);
-	output_messages_through_pipes(vstr, sendfifo);
+	return updateMessages;
+}
+
+void CheckForInactiveUsers(vector<User>& users, IncomingData data)
+{
+	time_t currentTime = time(NULL);
+	
+    for (int i = 0; i< users.size(); i++)
+	{
+		//set lastUpdateTime for user currently updating to the currentTime
+	    if (users[i].GetTime() == data.timecode)
+		{
+			users[i].SetLastUpdateTime(currentTime); 
+    	}
+       
+	    //if a user hasn't updated in MAX_WAIT amount of time, boot them off (they're gone)
+      	if ((currentTime - users[i].GetLastUpdateTime()) >= MAX_WAIT)
+		{
+			cout << "\n\n****Booting off " << users[i].GetUsername() << "*******\n\n";
+            users.erase(users.begin()+i);
+    	}
+
+    }
+        
+	return; 
+}
+
+bool IsNewUser(IncomingData data)
+{
+	for(int i = 0; i < activeUsers.size(); i++)
+	{
+		if(data.timecode == activeUsers[i].GetTime())
+		{
+			return false;
+		}
+	}
+	
+	return true;
 }
