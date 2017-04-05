@@ -52,3 +52,5 @@ function checkServerForUpdates()
 	callCGI("")
 }
 
+
+
