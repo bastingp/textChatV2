@@ -60,7 +60,8 @@ void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);			//sends
 void SendMessageThroughPipes(string message, Fifo& sendfifo);					//sends single message through fifo pipes
 vector<string> GetUpdateMessages(IncomingData data);						//returns vector of messages user hasn't received yet, 
 																			//or "$UPTODATE*" if they already have all the messages
-void CheckForInactiveUsers(vector<User>& users, IncomingData data); 
+void CheckForInactiveUsers(vector<User>& users, IncomingData data); 	//boots off any users who haven't updated within MAX_WAIT time
+bool IsNewUser(IncomingData data);
 
 int main()
 {	
@@ -84,13 +85,13 @@ int main()
 		if(DataIsCorrupt(incomingData) == false)
 		{
 			cout << "Got command: " << incomingData.command << endl << endl;
-			if(incomingData.command == "LOAD")
+			if((incomingData.command == "LOAD" || IsNewUser(incomingData)) && incomingData.command != "UNLOAD")
 			{
 				//if there's room on the server, add them to the chat room
 				if(activeUsers.size() < MAX_USERS)
 				{
 					AssignUser(incomingData);
-					string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername();
+					string loadMessage = "$USER|" + activeUsers[activeUsers.size() - 1].GetUsername() + "*";
 					SendMessageThroughPipes(loadMessage, sendfifo);
 				}
 				//otherwise, let them know the server is already full
@@ -324,7 +325,7 @@ vector<string> GetUpdateMessages(IncomingData data)
 	
 	if(data.userMessageSize == numMessages.str())
 	{
-		updateMessages.push_back("$UPTODATE");
+		updateMessages.push_back("$UPTODATE*");
 	}
 	else if(data.userMessageSize < numMessages.str())
 	{
@@ -338,7 +339,7 @@ vector<string> GetUpdateMessages(IncomingData data)
 	{
 		//this should never happen
 		cout << "\n\n*****ERROR: User has more messages than server*****\n\n";
-		updateMessages.push_back("$UPTODATE");
+		updateMessages.push_back("$UPTODATE*");
 	}
 	
 	return updateMessages;
@@ -366,4 +367,17 @@ void CheckForInactiveUsers(vector<User>& users, IncomingData data)
     }
         
 	return; 
+}
+
+bool IsNewUser(IncomingData data)
+{
+	for(int i = 0; i < activeUsers.size(); i++)
+	{
+		if(data.timecode == activeUsers[i].GetTime())
+		{
+			return false;
+		}
+	}
+	
+	return true;
 }
