@@ -48,7 +48,7 @@ const int MAX_USERS = 5;
 vector<User> activeUsers;			//all users signed into the server
 vector<string> availableUsernames = {"StrangerBob", "StrangerSally", "StrangerPtolemy", "StrangerHelga", "StrangerAlex", 
 									"StrangerThings", "StrangerLudwig", "StrangerToadstool", "StrangerJedediah", "StrangerYevgeni"};
-vector<string> storedMessages;
+vector<string> storedMessages;//all users messages
 
 
 IncomingData GetMessageAsIncomingData(string message);		//parses message, stores its data into an IncomingData struct, and returns the data
@@ -321,9 +321,9 @@ vector<string> GetUpdateMessages(IncomingData data)
 {
 	vector<string> updateMessages;
 	stringstream numMessages;
-	numMessages << storedMessages.size();
+	numMessages << storedMessages.size(); //pushes messages into the vector using a stringstream
 	
-	if(data.userMessageSize == numMessages.str())
+	if(data.userMessageSize == numMessages.str())//if there are no new messages
 	{
 		updateMessages.push_back("$UPTODATE");
 	}
@@ -371,7 +371,7 @@ void CheckForInactiveUsers(vector<User>& users, IncomingData data)
 	return; 
 }
 
-bool IsNewUser(IncomingData data)
+bool IsNewUser(IncomingData data) //checks to see if the USER id is the same 
 {
 	for(int i = 0; i < activeUsers.size(); i++)
 	{
