@@ -27,7 +27,7 @@ int main()
 	string status_check_message = "$STATUS%*";
 
 	string end_messages = "$END";
-	string uptodate = "$UPTODATE";
+	string uptodate = "$UPTODATE*";
 	string word;
 	string message;
 	string reply;
