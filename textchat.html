@@ -1,6 +1,8 @@
-<<html>
+<html>
   
-  <head>
+  <head></head>
+  
+  <body background-color="#E6E6FA" onload="pageInit()" onunload="exitRoom()">&lt;
     <title>Chat project</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
@@ -42,7 +44,6 @@
       /* Scroll Box attributes */
       .scrollabletextbox {
          background-color: #89aee1;
-          background: linear-gradient(89, red, yellow);
           height: 400px;
           width: 800px;
           font-family: 'Tinos', serif; 
@@ -51,9 +52,6 @@
           color: #000000;
       }
     </style>
-  </head>
-  
-  <body background-color="#E6E6FA" onload="pageInit()" onunload="exitRoom()">
     <div class="center-block">
       <div class="jumbotron">
         <script src="textchat.js">
@@ -66,7 +64,7 @@
           <div>
             <form name="textBox">
               <input class="textinput" name="textInput" type="text" maxlength="50" onkeydown="if (event.keyCode == 13)
-                          javascript: sendMessage()"></input>
+                          event.preventDefault javascript: sendMessage()">
               <button type="button" class="btn btn-sm" id="sendbutton" aria-label="Envelope"
               onclick="javascript: sendMessage()">
                 <span class="glyphicon glyphicon-envelope" aria-label="send message"></span>
@@ -75,8 +73,3 @@
             <h2>A project by Preston Basting, Joey Schutz, and Natalie Twitchell</h2>
           </div>
         </div>
-      </div>
-    </div>
-  </body>
-
-</html>
