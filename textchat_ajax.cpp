@@ -59,7 +59,7 @@ int main()
 	recfifo.openread();
 	string reply = "";
 	string temp = recfifo.recv();
-	while(temp.find("$END") > 0)
+	while(temp.find("$END") != string::npos)
 	{
 		reply += "|" + temp;
 		if(temp.find("$UPTODATE*") != string::npos)
