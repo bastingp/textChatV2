@@ -351,7 +351,7 @@ time_t currentTime = time(NULL);
     for (int i = 0; i< users.size(); i++){
 	    
 	  lastUpdateTime = users[i].GetLastUpdateTime();
-	   string usersTimeCode = users[i].GetTimeCode();
+	   string usersTimeCode = users[i].GetTime();
 	    
 	    if (userstimeCode = data.timecode)
 	{
