@@ -28,6 +28,12 @@ string get_command(string message);
 
 int main() 
 {	
+	// create the FIFOs for communication
+	Fifo recfifo(receive_fifo);
+	Fifo sendfifo(send_fifo);
+	//Send message to server
+	sendfifo.openwrite();
+	
 	Cgicc cgi;    // Ajax object
 	char *cstr;
 	const string unload_command = "UNLOAD";
@@ -35,14 +41,7 @@ int main()
 	// Create AJAX objects to recieve information from web page.
 	form_iterator user_input = cgi.getElement("message");
 	
-	  // create the FIFOs for communication
-	Fifo recfifo(receive_fifo);
-	Fifo sendfifo(send_fifo);
-	
 	string message = **user_input;
-	
-	//Send message to server
-	sendfifo.openwrite();
 	sendfifo.send(message);
 	
 	//Tell javascript how to read output
@@ -56,25 +55,23 @@ int main()
 	}
 	
 	//Get all messages from the server, and store in string
-	recfifo.openread();
 	string reply = "";
+	recfifo.openread();
 	string temp = recfifo.recv();
-	while(temp.find("$END") > 0)//searches for the $END message and combines the messages
+	while(reply.find("$END") > 0)//searches for the $END message and combines the messages
 	{
 		reply += "|" + temp;
-		if(temp.find("$UPTODATE") != string::npos)
+		if(reply.find("$UPTODATE") != string::npos)
 		{
 			break;
 		}
 		temp = recfifo.recv();
 	}
-	
-	reply += "*";
-	cout << reply;
-	
 	recfifo.fifoclose();
 	sendfifo.fifoclose(); //closes fifos
 	
+	reply += "*";
+	cout << reply;	
 	return 0;
 }
 

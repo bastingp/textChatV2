@@ -77,6 +77,8 @@ int main()
 		//Open fifo, get message from client
 		recfifo.openread(); 
 		string inMessage = recfifo.recv(); 
+		//Close fifo
+		recfifo.fifoclose();
 		
 		cout << "Got message: " << inMessage << endl; //test condition 
 		
@@ -132,9 +134,6 @@ int main()
 			cout << "\n\n******Data is corrupt******\n\n";
 			SendMessageThroughPipes("$CORRUPT", sendfifo);
 		}
-				
-		//Close fifo
-		recfifo.fifoclose();
 	}
 	
 	cout << "\n\n****out of while loop****";
