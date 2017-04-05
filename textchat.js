@@ -16,7 +16,7 @@ function pageInit()
 	}
 	
 	//send load message to CGI
-	callCGI("$" + timeCode "|LOAD|*");
+	callCGI("$" + timeCode + "|LOAD|*");
 }
 
 function callCGI(CGIMessage)
