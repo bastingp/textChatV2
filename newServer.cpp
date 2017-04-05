@@ -134,9 +134,7 @@ int main()
 		CheckForInactiveUsers(activeUsers, incomingData);
 				
 		//Close fifo
-		
 		recfifo.fifoclose();
-		CheckForInactiveUsers(activeUsers, incomingData);
 	}
 	
 	cout << "\n\n****out of while loop****";
