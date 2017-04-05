@@ -24,6 +24,7 @@ struct IncomingData
 	string username = "";
 	string message = "";
 	string userMessageSize = "";
+	string lastUpdateTime = "";
 	
 	//resets all variables to empty strings
 	void Reset()
@@ -33,6 +34,8 @@ struct IncomingData
 		username = "";
 		message = "";
 		userMessageSize = "";
+		lastUpdateTime =""; 
+		
 	}
 };
 
@@ -57,7 +60,7 @@ void SendMessageThroughPipes(vector<string> messages, Fifo& sendfifo);			//sends
 void SendMessageThroughPipes(string message, Fifo& sendfifo);					//sends single message through fifo pipes
 vector<string> GetUpdateMessages(IncomingData data);						//returns vector of messages user hasn't received yet, 
 																			//or "$UPTODATE*" if they already have all the messages
-void CheckForInactiveUsers(vector<User> users); 
+void CheckForInactiveUsers(vector<User> users, IncomingData data); 
 
 int main()
 {	
@@ -128,7 +131,7 @@ int main()
 			SendMessageThroughPipes("$CORRUPT", sendfifo);
 		}
 		
-		CheckForInactiveUsers(activeUsers);
+		CheckForInactiveUsers(activeUsers, incomingData);
 				
 		//Close fifo
 		recfifo.fifoclose();	
@@ -342,18 +345,18 @@ vector<string> GetUpdateMessages(IncomingData data)
 	return updateMessages;
 }
 
-void CheckForInactiveUsers(vector<User> users){
+void CheckForInactiveUsers(vector<User> users, IncomingData data){
 time_t currentTime = time(NULL);
     for (int i = 0; i< users.size(); i++){
         
-        if (newTime - users.lastUpdateTime[i] >= MAX_WAIT)
+        if (currentTime - users.lastUpdateTime[i] >= MAX_WAIT)
         {
             unassign(users[i]);
         }
-        else 
-        {
-        	users.lastUpdateTime[i]=currentTime;
-        }
-        }
+	if (user[i].timeCode = incomingData.timeCode)
+	{
+		user[i].lastUpdateTime[i] = currentTime; 
+    	}
+    }
         return; 
 }
