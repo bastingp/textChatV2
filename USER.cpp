@@ -50,7 +50,7 @@ unsigned long int User::GetLastUpdateTime() const
 	return (lastUpdateTime);
 }
 
-void User::SetLastUpdateTime(unsigned long int newUpdateTime)
+void User::SetLastUpdateTime(time_t newUpdateTime)
 {
 	lastUpdateTime = newUpdateTime;
 }
