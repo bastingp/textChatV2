@@ -104,14 +104,15 @@ int main()
 	logfile << get_timecode(message) << " Got message from server: " << temp << endl;
 	logfile.close();
 
-	while(temp.find("$END") > 0)//searches for the $END message and combines the messages
+	reply += "|" + temp;
+	while(reply.find("$END") != string::npos)//searches for the $END message and combines the messages
 	{
-		reply += "|" + temp;
-		if(reply.find("$UPTODATE") != string::npos)
-		{
-			break;
-		}
+		// if(reply.find("$UPTODATE") != string::npos)
+		// {
+			// break;
+		// }
 		temp = recfifo.recv();
+		reply += "|" + temp;
 		
 		logfile.open("/tmp/g3log.log",ios::out|ios::app);
 		logfile << get_timecode(message) << " Got message from server: " << temp << endl;
