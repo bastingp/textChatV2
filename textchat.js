@@ -160,6 +160,12 @@ function updateMessages(response)
 		{
 			sendUser = 'You';
 		}
+		//don't push $END to chatbox. end of messages, so break
+		if(message == '$END' || sendUser == '$END')
+		{
+			numMessages--;
+			break;
+		}
 		updateChatBox(message, sendUser);
 		i++;
 	}
@@ -202,6 +208,9 @@ function pageInit()
 
 function initializeVariables()
 {
+	//get random number to identify cookies between multiple pages
+	var pageID = Math.random();
+	
 	//get time code from local storage
 	timeCode = localStorage.getItem("timeCode");
 	//if it's equal to NULL, then there's no local storage, and we need to set it now
