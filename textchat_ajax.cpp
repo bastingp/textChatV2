@@ -105,12 +105,8 @@ int main()
 	logfile.close();
 
 	reply += "|" + temp;
-	while(reply.find("$END") != string::npos)//searches for the $END message and combines the messages
+	while(reply.find("$END") == string::npos)//searches for the $END message and combines the messages
 	{
-		// if(reply.find("$UPTODATE") != string::npos)
-		// {
-			// break;
-		// }
 		temp = recfifo.recv();
 		reply += "|" + temp;
 		

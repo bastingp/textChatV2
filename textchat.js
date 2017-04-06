@@ -30,7 +30,7 @@ function parseResponse(response)
 	//read the command
 	while(index < response.length)
 	{
-		if(response[index] == '|')
+		if(response[index] == '|' || response[index] == '*')
 		{
 			index++;
 			break;
