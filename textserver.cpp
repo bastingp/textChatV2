@@ -320,16 +320,22 @@ vector<string> GetUpdateMessages(IncomingData data)
 {
 	vector<string> updateMessages;
 	stringstream numMessages;
-	numMessages << storedMessages.size(); //pushes messages into the vector using a stringstream
+	numMessages << storedMessages.size(); //convert number of mesages on server from int to string
+	//get user's message size from a string to an int
+	int numUserMessages;
+	if (!(istringstream(data.userMessageSize) >> numUserMessages))
+	{
+		numUserMessages = 0;
+	}
 	
 	if(data.userMessageSize == numMessages.str())//if there are no new messages
 	{
 		updateMessages.push_back("$UPTODATE");
 	}
-	else if(data.userMessageSize < numMessages.str())
+	else if(numUserMessages < storedMessages.size())
 	{
 		updateMessages.push_back("$UPDATE");
-		for(int i = stoi(data.userMessageSize.c_str()); i < storedMessages.size(); i++)
+		for(int i = numUserMessages; i < storedMessages.size(); i++)
 		{
 			updateMessages.push_back(storedMessages[i]);
 		}
