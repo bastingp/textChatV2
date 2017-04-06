@@ -89,7 +89,7 @@ function assignUsername(response)
 	username = "";
 	while(i < response.length)
 	{
-		if(response[i] == '*')
+		if(response[i] == '*' || response[i] == '|')
 		{
 			break;
 		}
