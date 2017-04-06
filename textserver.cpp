@@ -329,7 +329,7 @@ vector<string> GetUpdateMessages(IncomingData data)
 	else if(data.userMessageSize < numMessages.str())
 	{
 		updateMessages.push_back("$UPDATE");
-		for(int i = atoi(data.userMessageSize.c_str()); i < storedMessages.size(); i++)
+		for(int i = stoi(data.userMessageSize.c_str()); i < storedMessages.size(); i++)
 		{
 			updateMessages.push_back(storedMessages[i]);
 		}

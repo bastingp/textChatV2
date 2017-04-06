@@ -27,6 +27,7 @@ string receive_fifo = "chatReply";
 string send_fifo = "chatRequest";
 
 string get_command(string message);
+string get_timecode(string message);
 
 int main() 
 {	
@@ -57,12 +58,12 @@ int main()
 	string message = **user_input;
 	
 	logfile.open("/tmp/g3log.log",ios::out|ios::app);
-	logfile << "sending message...\n";
+	logfile << get_timecode(message) << " sending message...\n";
 	logfile.close();
 	
 	sendfifo.send(message);
 	logfile.open("/tmp/g3log.log",ios::out|ios::app);
-	logfile << "message sent through sendfifo\n";
+	logfile << get_timecode(message) << " message sent through sendfifo\n";
 	logfile.close();
 	
 	//Tell javascript how to read output
@@ -72,13 +73,13 @@ int main()
 	if(get_command(message) == unload_command)
 	{
 		logfile.open("/tmp/g3log.log",ios::out|ios::app);
-		logfile << "Found command to be unload\n";
+		logfile << get_timecode(message) << " Found command to be unload\n";
 		logfile.close();
 		
 		sendfifo.fifoclose();
 		
 		logfile.open("/tmp/g3log.log",ios::out|ios::app);
-		logfile << "Exiting program\n";
+		logfile << get_timecode(message) << " Exiting program\n";
 		logfile.close();
 		
 		return 0;
@@ -88,22 +89,22 @@ int main()
 	string reply = "";
 	
 	logfile.open("/tmp/g3log.log",ios::out|ios::app);
-	logfile << "Opening read fifo...\n";
+	logfile << get_timecode(message) << " Opening read fifo...\n";
 	logfile.close();
 	
 	recfifo.openread();
 	
 	logfile.open("/tmp/g3log.log",ios::out|ios::app);
-	logfile << "Readfifo opened\n";
+	logfile << get_timecode(message) << " Readfifo opened\n";
 	logfile.close();
 	
 	string temp = recfifo.recv();
 	
 	logfile.open("/tmp/g3log.log",ios::out|ios::app);
-	logfile << "Got message from server: " << temp << endl;
+	logfile << get_timecode(message) << " Got message from server: " << temp << endl;
 	logfile.close();
 
-	while(reply.find("$END") > 0)//searches for the $END message and combines the messages
+	while(temp.find("$END") > 0)//searches for the $END message and combines the messages
 	{
 		reply += "|" + temp;
 		if(reply.find("$UPTODATE") != string::npos)
@@ -113,26 +114,26 @@ int main()
 		temp = recfifo.recv();
 		
 		logfile.open("/tmp/g3log.log",ios::out|ios::app);
-		logfile << "Got message from server: " << temp << endl;
+		logfile << get_timecode(message) << " Got message from server: " << temp << endl;
 		logfile.close();
 	}
 	
 	logfile.open("/tmp/g3log.log",ios::out|ios::app);
-	logfile << "Out of loop. Closing fifos\n";
+	logfile << get_timecode(message) << " Out of loop. Closing fifos\n";
 	logfile.close();
 	
 	recfifo.fifoclose();
 	sendfifo.fifoclose(); //closes fifos
 	
 	logfile.open("/tmp/g3log.log",ios::out|ios::app);
-	logfile << "Fifos closed. About to cout\n";
+	logfile << get_timecode(message) << " Fifos closed. About to cout\n";
 	logfile.close();
 	
 	reply += "*";
 	cout << reply;	
 	
 	logfile.open("/tmp/g3log.log",ios::out|ios::app);
-	logfile << "End program\n";
+	logfile << get_timecode(message) << " End program\n";
 	logfile.close();
 	
 	return 0;
@@ -163,4 +164,25 @@ string get_command(string message)//parser
 	}
 	
 	return command;
+}
+
+string get_timecode(string message)
+{
+	int index = 0;
+	string timecode = "";
+	
+	//go past $
+	while(message[index] != '$' && index < message.size())
+	{
+		index++;
+	}
+	index++;
+	//go past TimeCode|
+	while(message[index] != '|' && index < message.size() && message[index] != '*')
+	{
+		timecode += message[index];
+		index++;
+	}
+	
+	return timecode;
 }
